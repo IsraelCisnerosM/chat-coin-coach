@@ -1,0 +1,280 @@
+{
+  "contexto_cripto_especifico": {
+    "ethereum": {
+      "descripcion": "Red blockchain de contratos inteligentes y segunda criptomoneda por capitalización",
+      "casos_uso": [
+        "Medio de pago descentralizado",
+        "Staking para ganar recompensas (4-5% APR)",
+        "Acceso a aplicaciones DeFi",
+        "Compra de NFTs",
+        "Participación en DAOs"
+      ],
+      "ventajas": [
+        "Red establecida con gran adopción",
+        "Ecosistema DeFi más grande",
+        "Transición exitosa a Proof of Stake",
+        "Roadmap claro de desarrollo"
+      ],
+      "consideraciones": [
+        "Gas fees pueden ser altos en mainnet",
+        "Volatilidad de precio considerable",
+        "Requiere wallet segura y conocimiento técnico básico"
+      ],
+      "precio_historico": "ETH ha mostrado tendencia alcista a largo plazo con ciclos de 4 años correlacionados con Bitcoin"
+    },
+    "redes_layer2": {
+      "polygon": {
+        "descripcion": "Solución de escalabilidad para Ethereum con fees bajísimas",
+        "ventajas": "Transacciones de $0.01-0.10, confirmación rápida, compatible con Ethereum",
+        "uso_recomendado": "Transacciones frecuentes, DeFi, NFTs económicos"
+      },
+      "arbitrum": {
+        "descripcion": "Rollup optimista que reduce costos manteniendo seguridad de Ethereum",
+        "ventajas": "Fees 90% más bajas que mainnet, gran ecosistema DeFi",
+        "uso_recomendado": "DeFi, trading, pools de liquidez"
+      },
+      "optimism": {
+        "descripcion": "Otra solución rollup con enfoque en experiencia de usuario",
+        "ventajas": "Fees bajas, desarrollo activo, airdrop reciente",
+        "uso_recomendado": "DeFi, governance, aplicaciones sociales"
+      }
+    },
+    "tipos_transacciones": {
+      "compra": {
+        "descripcion": "Adquisición de ETH o tokens usando dinero fiat o stablecoins",
+        "pasos": "1) Selecciona monto, 2) Confirma precio, 3) Verifica comisiones, 4) Ejecuta compra",
+        "consideraciones": "Revisa spread y comisiones, usa DCA para reducir riesgo de timing"
+      },
+      "venta": {
+        "descripcion": "Conversión de ETH o tokens a dinero fiat o stablecoins",
+        "pasos": "1) Selecciona monto, 2) Confirma precio, 3) Verifica tax implications, 4) Ejecuta venta",
+        "consideraciones": "Ten en cuenta impuestos por ganancias de capital, timing del mercado"
+      },
+      "transferencia": {
+        "descripcion": "Envío de ETH entre wallets",
+        "pasos": "1) Verifica dirección destino, 2) Selecciona red, 3) Estima gas, 4) Confirma y envía",
+        "consideraciones": "SIEMPRE verifica la dirección completa, transacciones en blockchain son irreversibles"
+      },
+      "stake": {
+        "descripcion": "Bloquear ETH para validar la red y ganar recompensas",
+        "pasos": "1) Selecciona plataforma, 2) Elige monto, 3) Acepta periodo de lock, 4) Stake",
+        "recompensas": "4-5% APR típicamente, puede variar según plataforma y condiciones de red",
+        "consideraciones": "Periodo de lock (días a años), riesgo de plataforma, impuestos sobre rewards"
+      },
+      "swap": {
+        "descripcion": "Intercambio directo entre dos tokens",
+        "pasos": "1) Selecciona par de tokens, 2) Ingresa monto, 3) Revisa slippage, 4) Confirma swap",
+        "consideraciones": "Slippage en mercados volátiles, impacto de precio en swaps grandes, MEV protection"
+      }
+    },
+    "gas_fees": {
+      "que_es": "Comisión pagada a validadores por procesar transacciones",
+      "factores": [
+        "Demanda de la red (más demanda = mayor precio)",
+        "Complejidad de la transacción (contratos inteligentes cuestan más)",
+        "Velocidad deseada (prioridad alta = mayor costo)"
+      ],
+      "como_ahorrar": [
+        "Transacciona en horas de baja actividad (fines de semana, madrugadas UTC)",
+        "Usa Layer 2 (Polygon, Arbitrum) para ahorrar 90%+",
+        "Agrupa transacciones cuando sea posible",
+        "Usa herramientas de estimación de gas (etherscan.io/gastracker)",
+        "Configura gas price manualmente para optimizar costo/velocidad"
+      ],
+      "rangos_tipicos": {
+        "bajo": "< 20 gwei - Transacciones lentas pero económicas",
+        "medio": "20-50 gwei - Balance entre costo y velocidad",
+        "alto": "50-100 gwei - Rápido pero costoso",
+        "muy_alto": "> 100 gwei - Solo para transacciones urgentes"
+      }
+    }
+  },
+  "patrones_conversacionales": {
+    "analisis_gastos": {
+      "frases_activadoras": [
+        "¿cómo voy?",
+        "¿en qué gasto más?",
+        "analiza mis gastos",
+        "¿cómo van mis finanzas?",
+        "muéstrame mi resumen"
+      ],
+      "respuesta_tipo": "Análisis estructurado con: 1) Resumen de periodo, 2) Top 3 categorías de gasto, 3) Comparación con mes anterior, 4) Insights accionables, 5) Pregunta de seguimiento"
+    },
+    "educacion": {
+      "frases_activadoras": [
+        "¿qué es...?",
+        "explícame",
+        "cómo funciona",
+        "no entiendo",
+        "ayúdame a aprender"
+      ],
+      "respuesta_tipo": "Explicación clara con: 1) Definición simple, 2) Ejemplo concreto, 3) Analogía si es concepto complejo, 4) Aplicación práctica, 5) Recursos para profundizar"
+    },
+    "transacciones": {
+      "frases_activadoras": [
+        "quiero comprar",
+        "cómo vendo",
+        "enviar ETH",
+        "transferir",
+        "hacer stake"
+      ],
+      "respuesta_tipo": "Guía paso a paso con: 1) Confirmación de intención, 2) Pasos numerados, 3) Advertencias de seguridad, 4) Estimación de costos, 5) Confirmación antes de ejecutar"
+    },
+    "mercado": {
+      "frases_activadoras": [
+        "precio de ETH",
+        "cómo está el mercado",
+        "debería comprar ahora",
+        "análisis de precio",
+        "tendencia"
+      ],
+      "respuesta_tipo": "Análisis neutral con: 1) Precio actual y cambio 24h, 2) Contexto histórico reciente, 3) Factores de influencia, 4) Recordatorio de no dar consejos de inversión, 5) Sugerencia de investigar más"
+    },
+    "metas": {
+      "frases_activadoras": [
+        "quiero ahorrar",
+        "mi meta es",
+        "cómo llego a",
+        "cuánto tiempo me toma",
+        "plan de ahorro"
+      ],
+      "respuesta_tipo": "Plan concreto con: 1) Confirmación de meta, 2) Cálculo de tiempo estimado, 3) Monto mensual sugerido, 4) Estrategias para lograrlo, 5) Hitos intermedios"
+    }
+  },
+  "plantillas_analisis": {
+    "resumen_mensual": {
+      "estructura": [
+        "Saludo personalizado",
+        "Total gastado vs mes anterior (% cambio)",
+        "Top 3 categorías con montos y % del total",
+        "Insight más relevante (ahorro u optimización)",
+        "Comparación con promedio de últimos 3 meses",
+        "Pregunta abierta para profundizar"
+      ],
+      "ejemplo": "Este mes gastaste ${total} en total, ${diferencia}% ${mas_menos} que el mes pasado. Tus principales gastos fueron: 1) {cat1} ${monto1} ({porcentaje1}%), 2) {cat2} ${monto2} ({porcentaje2}%), 3) {cat3} ${monto3} ({porcentaje3}%). Noté que {insight}. ¿Te gustaría explorar alguna categoría en detalle?"
+    },
+    "analisis_categoria": {
+      "estructura": [
+        "Monto total en la categoría",
+        "Desglose de transacciones principales",
+        "Comparación con promedio personal",
+        "Benchmark de gasto saludable para la categoría",
+        "Recomendación específica si aplica"
+      ],
+      "ejemplo": "En {categoria} gastaste ${total} este mes. Tus principales gastos fueron: {lista_transacciones}. Tu promedio en esta categoría es ${promedio}. Según estándares financieros, {categoria} debería ser {porcentaje_ideal}% de ingresos. {recomendacion}"
+    },
+    "proyeccion_ahorro": {
+      "estructura": [
+        "Monto actual ahorrado",
+        "Meta definida",
+        "Tiempo estimado al ritmo actual",
+        "Sugerencia de monto mensual óptimo",
+        "Impacto de pequeños ajustes",
+        "Motivación y siguiente paso"
+      ],
+      "ejemplo": "Actualmente tienes ${ahorro_actual} ahorrado. Para llegar a tu meta de ${meta}, necesitas ${faltante} más. Al ritmo actual llegarías en {meses} meses. Si ahorras ${sugerencia_mensual}/mes lo lograrías en {meses_optimizado} meses. Reducir gastos en {categoria} en ${reduccion} te daría ese extra. ¿Quieres que creemos un plan específico?"
+    }
+  },
+  "alertas_proactivas": {
+    "gasto_anomalo": {
+      "condicion": "gasto_categoria > promedio_3_meses * 1.5",
+      "mensaje": "👀 Noté un gasto inusual de ${monto} en {categoria}. Esto es ${porcentaje}% más alto que tu promedio. ¿Todo bien o quieres revisarlo juntos?",
+      "frecuencia": "inmediato"
+    },
+    "oportunidad_dca": {
+      "condicion": "dia_programado_dca && saldo_disponible >= monto_dca",
+      "mensaje": "📅 Es momento de tu inversión DCA de ${monto} en ETH. Precio actual: ${precio_eth}. ¿Procedo con la compra?",
+      "frecuencia": "programado"
+    },
+    "gas_bajo": {
+      "condicion": "gas_price < 20_gwei && usuario_tiene_tx_pendientes",
+      "mensaje": "⛽ El gas está bajo ahora (${gas_price} gwei). Buen momento para hacer esas transacciones pendientes y ahorrar en comisiones.",
+      "frecuencia": "cuando_condicion"
+    },
+    "meta_progreso": {
+      "condicion": "progreso_meta >= 25% && !notificado_previamente",
+      "mensaje": "🎯 ¡Vas genial! Ya completaste ${porcentaje}% de tu meta '{nombre_meta}'. Solo faltan ${faltante} para lograrlo. Sigue así!",
+      "frecuencia": "hitos_25_50_75_90"
+    },
+    "suscripcion_sin_uso": {
+      "condicion": "sin_transacciones_categoria > 60_dias && es_suscripcion",
+      "mensaje": "💡 No veo actividad en '{suscripcion}' desde hace {dias} días pero sigue cobrándose ${monto}/mes. ¿Consideras cancelarla?",
+      "frecuencia": "mensual"
+    },
+    "precio_objetivo": {
+      "condicion": "precio_activo <= precio_objetivo_usuario",
+      "mensaje": "🎯 ETH alcanzó tu precio objetivo de ${precio_objetivo}. Actualmente en ${precio_actual}. ¿Es momento de ejecutar tu estrategia?",
+      "frecuencia": "cuando_condicion"
+    }
+  },
+  "seguridad_transacciones": {
+    "verificaciones_previas": [
+      "Siempre verifica la dirección completa de destino, no solo los primeros/últimos caracteres",
+      "Confirma que estás en la red correcta (Ethereum mainnet, Polygon, etc.)",
+      "Revisa el monto Y el token antes de confirmar",
+      "Verifica que el gas fee es razonable para el valor de la transacción",
+      "Si la transacción es grande, haz una prueba pequeña primero"
+    ],
+    "senales_peligro": [
+      "Solicitudes de seed phrase o private key - NUNCA las compartas",
+      "Ofertas de 'duplicar tu ETH' o retornos garantizados muy altos",
+      "Presión para actuar rápido en 'oportunidades limitadas'",
+      "Sitios web con URLs similares pero no exactas (phishing)",
+      "Mensajes directos no solicitados con 'oportunidades de inversión'"
+    ],
+    "mejores_practicas": [
+      "Usa hardware wallet para grandes cantidades (Ledger, Trezor)",
+      "Guarda seed phrase en lugar físico seguro, nunca digital",
+      "Verifica contratos inteligentes en Etherscan antes de interactuar",
+      "Revoca permisos de tokens periódicamente (revoke.cash)",
+      "Mantén software de wallet actualizado",
+      "Considera usar múltiples wallets (una 'caliente' para uso diario, una 'fría' para ahorro)"
+    ]
+  },
+  "estrategias_inversion": {
+    "dca_dollar_cost_averaging": {
+      "que_es": "Inversión de monto fijo en intervalos regulares sin importar el precio",
+      "ventajas": [
+        "Reduce riesgo de comprar todo en un pico",
+        "Elimina decisiones emocionales",
+        "Aprovecha promedios de mercado a largo plazo",
+        "Funciona bien en activos volátiles como cripto"
+      ],
+      "implementacion": "Ejemplo: Invertir $100 en ETH cada lunes, sin importar si el precio está alto o bajo",
+      "resultados_historicos": "DCA en ETH durante cualquier periodo de 2+ años ha sido rentable históricamente"
+    },
+    "hodl_largo_plazo": {
+      "que_es": "Comprar y mantener sin vender por periodos prolongados (1-5+ años)",
+      "ventajas": [
+        "Evita fees de trading frecuente",
+        "Captura tendencia alcista de largo plazo",
+        "Menos estrés por volatilidad diaria",
+        "Ventajas fiscales en muchas jurisdicciones"
+      ],
+      "consideraciones": "Requiere convicción en el proyecto y tolerancia a volatilidad. Solo con dinero que no necesites en el corto plazo"
+    },
+    "diversificacion": {
+      "que_es": "No poner todos los huevos en una canasta",
+      "sugerencia_portafolio": {
+        "conservador": "70% BTC, 20% ETH, 10% stablecoins",
+        "moderado": "40% BTC, 40% ETH, 10% otros top 20, 10% stablecoins",
+        "agresivo": "30% BTC, 30% ETH, 30% proyectos establecidos, 10% alto riesgo/alto retorno"
+      },
+      "regla_oro": "Nunca más del 50% en un solo activo, máximo 5-10% del portafolio total en cripto si eres principiante"
+    }
+  },
+  "recursos_educativos": {
+    "conceptos_clave_enlaces": {
+      "ethereum_org": "Documentación oficial de Ethereum",
+      "etherscan": "Explorador de blockchain para verificar transacciones",
+      "gas_tracker": "Monitoreo de precios de gas en tiempo real",
+      "defi_pulse": "Métricas del ecosistema DeFi"
+    },
+    "herramientas_recomendadas": {
+      "wallets": ["MetaMask", "Rainbow", "Coinbase Wallet", "Trust Wallet"],
+      "exchanges": ["Coinbase", "Kraken", "Binance"],
+      "layer2": ["Polygon", "Arbitrum", "Optimism"],
+      "tracking": ["CoinGecko", "CoinMarketCap", "Zapper", "DeBank"]
+    }
+  }
+}

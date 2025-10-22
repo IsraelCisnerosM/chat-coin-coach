@@ -1,0 +1,217 @@
+{
+  "modulos_educativos": {
+    "ahorro": {
+      "titulo": "Fundamentos del Ahorro",
+      "contenido": "El ahorro ideal es del 20% de tus ingresos mensuales. La regla 50/30/20 sugiere: 50% para necesidades, 30% para deseos, 20% para ahorro e inversión.",
+      "tips": [
+        "Automatiza tu ahorro creando transferencias automáticas el día que recibes tu sueldo",
+        "Construye un fondo de emergencia de 3-6 meses de gastos esenciales",
+        "Usa la técnica de los sobres para gastos específicos",
+        "Revisa suscripciones mensuales, pueden representar 10-15% de gastos innecesarios"
+      ],
+      "nivel": "basico"
+    },
+    "inversion_cripto": {
+      "titulo": "Inversión en Criptomonedas",
+      "contenido": "Las criptomonedas son activos digitales que pueden formar parte de un portafolio diversificado. Bitcoin y Ethereum son las más establecidas.",
+      "tips": [
+        "Nunca inviertas más del 5-10% de tu portafolio en una sola criptomoneda",
+        "DCA (Dollar Cost Averaging): invierte cantidades fijas regularmente para reducir riesgo",
+        "ETH y BTC son las más estables para principiantes",
+        "Considera redes Layer 2 (Polygon, Arbitrum) para reducir comisiones",
+        "Usa wallets seguras y nunca compartas tus claves privadas"
+      ],
+      "riesgos": [
+        "Alta volatilidad de precios",
+        "Riesgo de pérdida total en proyectos no establecidos",
+        "Comisiones de gas pueden ser altas en momentos de congestión",
+        "Regulación en evolución constante"
+      ],
+      "nivel": "intermedio"
+    },
+    "presupuesto": {
+      "titulo": "Gestión de Presupuesto",
+      "contenido": "Un presupuesto efectivo te ayuda a controlar gastos y alcanzar metas financieras.",
+      "tips": [
+        "Registra todos tus gastos durante un mes para conocer tus patrones",
+        "El 'efecto latte': pequeños gastos diarios pueden sumar $300-500 USD al mes",
+        "Establece límites por categoría (alimentación, transporte, entretenimiento)",
+        "Revisa tu presupuesto semanalmente para ajustes tempranos",
+        "Apps de presupuesto pueden reducir gastos innecesarios en 20%"
+      ],
+      "categorias_sugeridas": [
+        "Vivienda (30-35%)",
+        "Alimentación (10-15%)",
+        "Transporte (10-15%)",
+        "Servicios (5-10%)",
+        "Ahorro (20%)",
+        "Entretenimiento (5-10%)",
+        "Otros (5-10%)"
+      ],
+      "nivel": "basico"
+    },
+    "deudas": {
+      "titulo": "Estrategias para Pagar Deudas",
+      "contenido": "Existen métodos probados para salir de deudas más rápido y pagar menos intereses.",
+      "metodos": {
+        "avalancha": {
+          "descripcion": "Paga primero las deudas con mayor tasa de interés",
+          "ventajas": "Ahorras más en intereses a largo plazo",
+          "desventajas": "Puede tomar más tiempo ver progreso visible"
+        },
+        "bola_de_nieve": {
+          "descripcion": "Paga primero las deudas más pequeñas",
+          "ventajas": "Victorias rápidas que mantienen la motivación",
+          "desventajas": "Puedes pagar más intereses totales"
+        }
+      },
+      "tips": [
+        "Un pago extra del 10% mensual puede reducir el tiempo de pago hasta 40%",
+        "Consolida deudas con altas tasas de interés si es posible",
+        "Negocia tasas de interés con tus acreedores",
+        "Evita contraer nuevas deudas mientras pagas las existentes"
+      ],
+      "nivel": "intermedio"
+    },
+    "ethereum_basico": {
+      "titulo": "Conceptos Básicos de Ethereum",
+      "contenido": "Ethereum es una plataforma blockchain que permite contratos inteligentes y aplicaciones descentralizadas (dApps).",
+      "conceptos_clave": {
+        "eth": "La criptomoneda nativa de Ethereum, usada para transacciones y gas",
+        "gas": "Comisión pagada por ejecutar transacciones o contratos inteligentes",
+        "wallet": "Aplicación para almacenar, enviar y recibir ETH",
+        "smart_contract": "Código que se ejecuta automáticamente cuando se cumplen condiciones",
+        "layer2": "Soluciones de escalabilidad que reducen costos (Polygon, Arbitrum, Optimism)"
+      },
+      "nivel": "basico"
+    }
+  },
+  "conceptos_basicos": {
+    "liquidez": "Capacidad de convertir un activo en efectivo rápidamente sin perder valor",
+    "volatilidad": "Medida de cuánto varía el precio de un activo en un periodo",
+    "diversificacion": "Estrategia de invertir en diferentes activos para reducir riesgo",
+    "apr": "Tasa Anual Porcentual - costo total de un préstamo expresado como porcentaje anual",
+    "roi": "Retorno de Inversión - ganancia o pérdida de una inversión como porcentaje",
+    "dca": "Dollar Cost Averaging - invertir cantidades fijas en intervalos regulares",
+    "fomo": "Fear Of Missing Out - miedo a perderse una oportunidad de inversión",
+    "hodl": "Hold On for Dear Life - estrategia de mantener criptomonedas a largo plazo",
+    "whale": "Inversor con grandes cantidades de criptomonedas que puede influir en el mercado",
+    "gas_fee": "Comisión pagada a mineros/validadores por procesar transacciones en blockchain"
+  },
+  "glosario": {
+    "blockchain": "Tecnología de registro distribuido que almacena información en bloques encadenados",
+    "wallet": "Herramienta digital para almacenar claves y gestionar criptomonedas",
+    "seed_phrase": "Conjunto de 12-24 palabras que permiten recuperar acceso a tu wallet",
+    "private_key": "Clave secreta que da acceso a tus fondos - NUNCA la compartas",
+    "public_key": "Dirección que compartes para recibir fondos",
+    "staking": "Bloquear criptomonedas para validar transacciones y ganar recompensas",
+    "defi": "Finanzas Descentralizadas - servicios financieros sin intermediarios tradicionales",
+    "nft": "Token No Fungible - activo digital único registrado en blockchain",
+    "mining": "Proceso de validar transacciones y crear nuevos bloques en proof-of-work",
+    "validator": "Nodo que valida transacciones en redes proof-of-stake como Ethereum 2.0"
+  },
+  "preguntas_frecuentes": [
+    {
+      "pregunta": "¿Cuánto debo ahorrar cada mes?",
+      "respuesta": "Lo ideal es ahorrar el 20% de tus ingresos mensuales. Si no puedes llegar a ese porcentaje, comienza con 10% e incrementa gradualmente. Lo más importante es la consistencia."
+    },
+    {
+      "pregunta": "¿Es seguro invertir en Ethereum?",
+      "respuesta": "Ethereum es la segunda criptomoneda más grande por capitalización de mercado y tiene casos de uso establecidos. Sin embargo, sigue siendo un activo volátil. Solo invierte lo que estés dispuesto a perder y nunca más del 5-10% de tu portafolio total en criptomonedas."
+    },
+    {
+      "pregunta": "¿Qué es el gas y por qué es tan caro a veces?",
+      "respuesta": "El gas es la comisión que pagas por transacciones en Ethereum. El precio varía según la demanda de la red. En horas pico puede ser muy alto. Para ahorrar, usa la red en horas de menor actividad o considera Layer 2 como Polygon que tiene comisiones mucho menores."
+    },
+    {
+      "pregunta": "¿Cómo creo un presupuesto efectivo?",
+      "respuesta": "1) Registra todos tus gastos durante un mes, 2) Clasifícalos en categorías, 3) Aplica la regla 50/30/20, 4) Establece límites por categoría, 5) Revisa semanalmente y ajusta. Las apps de presupuesto facilitan este proceso."
+    },
+    {
+      "pregunta": "¿Qué método es mejor para pagar deudas?",
+      "respuesta": "Depende de tu personalidad. El método avalancha ahorra más en intereses (paga primero las tasas más altas). El método bola de nieve da victorias rápidas (paga primero las deudas pequeñas) lo que ayuda con la motivación. Ambos funcionan si eres consistente."
+    },
+    {
+      "pregunta": "¿Qué es DCA y cómo funciona?",
+      "respuesta": "DCA (Dollar Cost Averaging) es invertir cantidades fijas en intervalos regulares sin importar el precio. Por ejemplo, comprar $100 de ETH cada semana. Esto reduce el riesgo de comprar todo en un pico de precio y aprovecha los promedios del mercado."
+    },
+    {
+      "pregunta": "¿Cuánto dinero necesito para empezar a invertir en cripto?",
+      "respuesta": "Puedes empezar con tan solo $10-20 USD. Lo importante es comenzar pequeño para aprender cómo funciona todo. A medida que te sientas más cómodo, puedes incrementar tus inversiones gradualmente."
+    }
+  ],
+  "consejos_activos": [
+    {
+      "id": "ahorro_cafeteria",
+      "tipo": "ahorro",
+      "titulo": "Reduce gastos en café",
+      "condicion": "gasto_diario_cafe > 5 USD",
+      "mensaje": "Gastas ${monto} diarios en café. Prepararlo en casa podría ahorrarte ${ahorro_mensual} al mes (${ahorro_anual} al año). Ese dinero invertido en ETH con 10% de retorno anual serían ${proyeccion_5_anos} en 5 años.",
+      "categoria": "gastos_pequeños",
+      "impacto": "medio"
+    },
+    {
+      "id": "fondo_emergencia",
+      "tipo": "ahorro",
+      "titulo": "Construye tu fondo de emergencia",
+      "condicion": "ahorro_total < gastos_mensuales * 3",
+      "mensaje": "Tu fondo de emergencia debería cubrir 3-6 meses de gastos. Actualmente tienes ${ahorro_actual}. Te recomiendo ahorrar ${sugerencia_mensual} al mes para alcanzar ${meta_fondo} en ${meses_para_meta} meses.",
+      "categoria": "ahorro",
+      "impacto": "alto"
+    },
+    {
+      "id": "diversificacion_cripto",
+      "tipo": "inversion",
+      "titulo": "Diversifica tu portafolio cripto",
+      "condicion": "porcentaje_en_una_cripto > 50%",
+      "mensaje": "Tienes ${porcentaje}% de tu portafolio cripto en un solo activo. Considera diversificar para reducir riesgo. Una distribución sugerida: 40% ETH, 30% BTC, 20% stablecoins, 10% otros proyectos establecidos.",
+      "categoria": "inversion",
+      "impacto": "alto"
+    },
+    {
+      "id": "optimiza_gas",
+      "tipo": "transacciones",
+      "titulo": "Optimiza tus comisiones de gas",
+      "condicion": "promedio_gas_pagado > threshold_alto",
+      "mensaje": "Estás pagando ${promedio_gas} en promedio por transacción. Considera usar Layer 2 (Polygon, Arbitrum) o hacer transacciones en horas de menor actividad (fines de semana, madrugadas) para ahorrar hasta 90% en gas.",
+      "categoria": "optimizacion",
+      "impacto": "medio"
+    },
+    {
+      "id": "dca_strategy",
+      "tipo": "inversion",
+      "titulo": "Implementa estrategia DCA",
+      "condicion": "inversiones_irregulares == true",
+      "mensaje": "Tus inversiones son irregulares. Considera DCA: invierte ${monto_sugerido} semanalmente en ETH. Esto reduce el riesgo de comprar en picos y aprovecha promedios de mercado. Históricamente, DCA reduce volatilidad en 30-40%.",
+      "categoria": "estrategia",
+      "impacto": "alto"
+    },
+    {
+      "id": "revision_suscripciones",
+      "tipo": "ahorro",
+      "titulo": "Revisa tus suscripciones",
+      "condicion": "suscripciones_totales > 3",
+      "mensaje": "Tienes ${num_suscripciones} suscripciones activas por ${total_mensual}/mes. Cancela las que no uses frecuentemente. Esto puede ahorrarte ${ahorro_potencial}/mes (${ahorro_anual}/año).",
+      "categoria": "gastos_recurrentes",
+      "impacto": "medio"
+    }
+  ],
+  "alertas_inteligentes": {
+    "gasto_inusual": {
+      "descripcion": "Detecta cuando un gasto en una categoría supera el promedio en más de 50%",
+      "mensaje": "⚠️ Detecté un gasto inusual de ${monto} en {categoria}. Esto es ${porcentaje}% más alto que tu promedio de ${promedio}. ¿Todo está bien?"
+    },
+    "oportunidad_ahorro": {
+      "descripcion": "Identifica patrones de gasto que pueden optimizarse",
+      "mensaje": "💡 He notado que gastas ${monto} en {categoria} mensualmente. Reducirlo en ${porcentaje_reduccion}% te ahorraría ${ahorro_mensual}/mes."
+    },
+    "meta_cercana": {
+      "descripcion": "Alerta cuando estás cerca de alcanzar una meta de ahorro",
+      "mensaje": "🎯 ¡Excelente progreso! Estás a solo ${monto_faltante} de alcanzar tu meta de {nombre_meta}. Al ritmo actual, la alcanzarás en {dias_restantes} días."
+    },
+    "recordatorio_dca": {
+      "descripcion": "Recuerda realizar inversión DCA programada",
+      "mensaje": "📅 Es momento de tu inversión DCA de ${monto} en {activo}. El precio actual es ${precio_actual}."
+    }
+  }
+}
