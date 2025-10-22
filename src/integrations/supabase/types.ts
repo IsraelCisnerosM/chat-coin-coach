@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pending_tasks: {
+        Row: {
+          amount: string
+          created_at: string | null
+          gas_estimate: string
+          id: string
+          network: string
+          title: string
+          token: string
+          type: string
+        }
+        Insert: {
+          amount: string
+          created_at?: string | null
+          gas_estimate: string
+          id: string
+          network: string
+          title: string
+          token: string
+          type: string
+        }
+        Update: {
+          amount?: string
+          created_at?: string | null
+          gas_estimate?: string
+          id?: string
+          network?: string
+          title?: string
+          token?: string
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

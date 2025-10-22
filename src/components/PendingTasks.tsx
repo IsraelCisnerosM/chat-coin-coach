@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Task {
   id: string;
@@ -19,27 +20,84 @@ export const PendingTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    const loadTasks = () => {
-      fetch('/pending-tasks.json')
-        .then(res => res.json())
-        .then(data => setTasks(data.tasks || []))
-        .catch(err => console.error('Error loading tasks:', err));
+    const loadTasks = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pending_tasks')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const formattedTasks: Task[] = (data || []).map(task => ({
+          id: task.id,
+          title: task.title,
+          type: task.type as Task["type"],
+          amount: task.amount,
+          token: task.token,
+          network: task.network,
+          gasEstimate: task.gas_estimate,
+        }));
+
+        setTasks(formattedTasks);
+      } catch (err) {
+        console.error('Error loading tasks:', err);
+      }
     };
 
     loadTasks();
-    // Reload every 2 seconds to detect changes
-    const interval = setInterval(loadTasks, 2000);
-    return () => clearInterval(interval);
+    
+    // Suscribirse a cambios en tiempo real
+    const channel = supabase
+      .channel('pending_tasks_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pending_tasks'
+        },
+        () => {
+          loadTasks();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  const handleApprove = (taskId: string) => {
-    toast.success("Transaction approved and sent to blockchain");
-    setTasks(tasks.filter(t => t.id !== taskId));
+  const handleApprove = async (taskId: string) => {
+    try {
+      const { error } = await supabase
+        .from('pending_tasks')
+        .delete()
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      toast.success("Transaction approved and sent to blockchain");
+    } catch (error) {
+      console.error('Error approving task:', error);
+      toast.error("Failed to approve transaction");
+    }
   };
 
-  const handleCancel = (taskId: string) => {
-    toast.info("Task cancelled");
-    setTasks(tasks.filter(t => t.id !== taskId));
+  const handleCancel = async (taskId: string) => {
+    try {
+      const { error } = await supabase
+        .from('pending_tasks')
+        .delete()
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      toast.info("Task cancelled");
+    } catch (error) {
+      console.error('Error cancelling task:', error);
+      toast.error("Failed to cancel task");
+    }
   };
   const getTypeColor = (type: Task["type"]) => {
     switch (type) {

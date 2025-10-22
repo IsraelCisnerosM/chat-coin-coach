@@ -268,15 +268,22 @@ export const AIChat = () => {
 
   const aprobarTarea = async (task: any) => {
     try {
-      // Leer el archivo actual de tareas
-      const responseTasks = await fetch('/pending-tasks.json');
-      const tasksData = await responseTasks.json();
+      // Guardar la tarea en Supabase
+      const { error } = await supabase
+        .from('pending_tasks')
+        .insert({
+          id: task.id,
+          title: task.title,
+          type: task.type,
+          amount: task.amount,
+          token: task.token,
+          network: task.network,
+          gas_estimate: task.gasEstimate,
+        });
+
+      if (error) throw error;
       
-      // Agregar la nueva tarea
-      tasksData.tasks.push(task);
-      
-      console.log('Tarea aprobada y guardada:', task);
-      console.log('Lista actualizada de tareas:', tasksData);
+      console.log('Tarea aprobada y guardada en BD:', task);
       
       // Actualizar el balance del portafolio si es una transacción de compra/venta
       if (task.type === 'buy' || task.type === 'sell') {
