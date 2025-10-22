@@ -1,4 +1,4 @@
-import { Home, TrendingUp, Receipt } from "lucide-react";
+import { Home, Receipt, GraduationCap } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 import {
@@ -16,6 +16,7 @@ import {
 const items = [
   { title: "Home", url: "/", icon: Home },
   { title: "Transacciones", url: "/transacciones", icon: Receipt },
+  { title: "Educación Financiera", url: "/educacion", icon: GraduationCap },
 ];
 
 export function AppSidebar() {

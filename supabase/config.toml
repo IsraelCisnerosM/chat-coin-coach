@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.transaction-chat]
 verify_jwt = false
+
+[functions.education-chat]
+verify_jwt = false

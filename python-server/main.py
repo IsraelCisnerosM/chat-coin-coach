@@ -519,6 +519,158 @@ def clasificar_intencion_transacciones(user_input):
         print(f"Error clasificando intención: {e}")
         return "CONSULTA"
 
+# Base de conocimientos para RAG educativo
+FINANCIAL_KNOWLEDGE_BASE = """
+# Base de Conocimientos Financieros
+
+## Conceptos Básicos de Ahorro
+- El ahorro ideal es del 20% de tus ingresos mensuales
+- Fondo de emergencia: 3-6 meses de gastos esenciales
+- Regla 50/30/20: 50% necesidades, 30% deseos, 20% ahorro
+
+## Gestión de Gastos
+- Pequeños gastos diarios pueden sumar mucho (efecto latte)
+- Revisar suscripciones mensuales puede ahorrar 10-15% del presupuesto
+- Planificar compras grandes reduce gastos impulsivos en 30%
+
+## Inversión en Criptomonedas
+- Diversificación: No más del 5-10% del portafolio en una sola crypto
+- DCA (Dollar Cost Averaging): Invertir cantidades fijas regularmente reduce riesgo
+- ETH y BTC son las más estables para principiantes
+- Considerar redes Layer 2 (Polygon, Arbitrum) para reducir fees
+
+## Pago de Deudas
+- Método avalancha: Pagar primero deudas con mayor interés
+- Método bola de nieve: Pagar primero deudas más pequeñas para motivación
+- Pago extra del 10% mensual puede reducir tiempo de pago hasta 40%
+
+## Presupuesto Inteligente
+- Apps de presupuesto pueden reducir gastos innecesarios en 20%
+- Revisar gastos semanalmente mejora control financiero
+- Establecer límites por categoría previene sobregastos
+
+## Educación Financiera
+- Leer 15 minutos diarios sobre finanzas mejora decisiones económicas
+- Consultar asesores financieros para decisiones importantes
+- Entender términos: APR, ROI, liquidez, volatilidad
+"""
+
+EDUCATION_SYSTEM_PROMPT = """Eres Bloky Health, un asistente experto en educación financiera y análisis de finanzas personales.
+
+# TU ROL
+Ayudas a usuarios a entender su situación financiera y tomar mejores decisiones con su dinero.
+
+# PRINCIPIOS
+1. **Educación primero**: Explica el "por qué" detrás de cada consejo
+2. **Personalización**: Adapta recomendaciones al contexto del usuario
+3. **Empoderamiento**: Enseña a pescar, no des el pescado
+4. **Claridad**: Usa lenguaje simple y ejemplos concretos
+5. **Motivación**: Resalta logros y progreso del usuario
+
+# CAPACIDADES CON RAG
+Tienes acceso a una base de conocimientos financieros que incluye:
+- Estrategias de ahorro y presupuesto
+- Conceptos de inversión en criptomonedas
+- Métodos de pago de deudas
+- Gestión de gastos y optimización
+
+IMPORTANTE: Usa este conocimiento para dar respuestas fundamentadas y educativas.
+
+# ESTILO DE COMUNICACIÓN
+- Empático y alentador
+- Usa ejemplos específicos con números
+- Ofrece pasos accionables
+- Celebra pequeños logros
+- Explica conceptos complejos de forma simple
+
+# RESPUESTAS TÍPICAS
+Cuando el usuario pregunta sobre:
+
+1. **Gastos**: Analiza patrones, identifica áreas de mejora, explica impacto de pequeños cambios
+2. **Ahorro**: Sugiere estrategias específicas, calcula impacto a corto/largo plazo
+3. **Presupuesto**: Recomienda distribución 50/30/20, explica cada categoría
+4. **Inversión**: Educa sobre riesgos, diversificación, y estrategias para principiantes
+5. **Deudas**: Explica métodos de pago, calcula ahorros potenciales en intereses
+
+# FORMATO DE RESPUESTAS
+Estructura tus respuestas así:
+1. Reconocimiento de la situación del usuario
+2. Dato educativo relevante
+3. Recomendación específica con números
+4. Pregunta de seguimiento para profundizar
+
+EJEMPLO:
+"Veo que te interesa mejorar tus gastos. Sabías que reducir gastos pequeños pero frecuentes puede generar ahorros de hasta 20% mensual? 
+
+En tu caso, podrías comenzar identificando tus 3 gastos más frecuentes. Si reduces cada uno en 30%, podrías ahorrar aproximadamente X ETH al mes, que en un año serían Y ETH.
+
+¿Te gustaría que analicemos alguna categoría específica de gastos?"
+"""
+
+def extract_relevant_knowledge(query: str) -> str:
+    """Extrae conocimiento relevante de la base de datos usando RAG simple"""
+    query_lower = query.lower()
+    sections = FINANCIAL_KNOWLEDGE_BASE.split('\n## ')
+    
+    relevant_sections = [
+        section for section in sections
+        if any(keyword in section.lower() for keyword in [
+            'ahorro' if 'ahorro' in query_lower else '',
+            'gasto' if 'gasto' in query_lower else '',
+            'inversión' if 'inversión' in query_lower else '',
+            'deuda' if 'deuda' in query_lower else '',
+            'presupuesto' if 'presupuesto' in query_lower else '',
+            'crypto' if 'crypto' in query_lower else ''
+        ]) if any(keyword in section.lower() for keyword in ['ahorro', 'gasto', 'inversión', 'deuda', 'presupuesto', 'crypto'])
+    ]
+    
+    return '## ' + '\n## '.join(relevant_sections) if relevant_sections else FINANCIAL_KNOWLEDGE_BASE
+
+@app.post("/education-chat")
+async def education_chat_endpoint(request: dict):
+    """Endpoint para chat educativo con RAG"""
+    try:
+        message = request.get("message", "")
+        history = request.get("history", [])
+        
+        print(f"📚 Procesando consulta educativa: {message}")
+        
+        # RAG: Extraer conocimiento relevante
+        relevant_knowledge = extract_relevant_knowledge(message)
+        print("🔍 Conocimiento relevante extraído")
+        
+        # Construir mensajes con contexto RAG
+        messages = [
+            {
+                "role": "system",
+                "content": f"{EDUCATION_SYSTEM_PROMPT}\n\n# CONOCIMIENTO RELEVANTE\n{relevant_knowledge}"
+            }
+        ]
+        messages.extend(history)
+        messages.append({"role": "user", "content": message})
+        
+        print("🤖 Llamando a OpenAI API con contexto educativo...")
+        
+        # Llamar a la API de OpenAI
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=800
+        )
+        
+        assistant_message = response.choices[0].message.content
+        print("✅ Respuesta educativa generada")
+        
+        return {"response": assistant_message}
+        
+    except Exception as e:
+        print(f"❌ Error en education-chat: {str(e)}")
+        return {
+            "error": str(e),
+            "response": "Disculpa, hubo un error procesando tu consulta. Por favor intenta de nuevo."
+        }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
