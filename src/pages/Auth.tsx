@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Coins, Mail, Lock } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -13,6 +14,15 @@ export default function Auth() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Si es registro, mostrar notificación
+    if (!isLogin) {
+      toast({
+        title: "Wallet creada exitosamente con Chipi pay",
+        description: "Tu cuenta ha sido creada correctamente",
+      });
+    }
+    
     // MVP: Solo redirige sin validación
     navigate("/home");
   };
