@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, Brain } from "lucide-react";
+import { Send, Mic, MicOff, Brain, Check } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,7 @@ export const AIChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
+  const [approvedTaskIds, setApprovedTaskIds] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -82,11 +83,6 @@ export const AIChat = () => {
             task: response.task,
           };
           setMessages([greetingMessage]);
-          
-          // Si viene una tarea, guardarla
-          if (response.task) {
-            await guardarTarea(response.task);
-          }
         }
       } catch (error) {
         console.error('Error al cargar saludo:', error);
@@ -161,11 +157,6 @@ export const AIChat = () => {
         };
         setMessages((prev) => [...prev, aiMessage]);
         setIsFirstMessage(false);
-        
-        // Si viene una tarea, guardarla
-        if (response.task) {
-          await guardarTarea(response.task);
-        }
       }
     } catch (error) {
       console.error('Error al enviar mensaje:', error);
@@ -275,24 +266,84 @@ export const AIChat = () => {
     }
   };
 
-  const guardarTarea = async (task: any) => {
+  const aprobarTarea = async (task: any) => {
     try {
-      // Leer el archivo actual
-      const response = await fetch('/pending-tasks.json');
-      const data = await response.json();
+      // Leer el archivo actual de tareas
+      const responseTasks = await fetch('/pending-tasks.json');
+      const tasksData = await responseTasks.json();
       
       // Agregar la nueva tarea
-      data.tasks.push(task);
+      tasksData.tasks.push(task);
       
-      // Guardar de vuelta (esto solo funciona en desarrollo, en producción necesitarías un endpoint)
-      console.log('Nueva tarea guardada:', task);
+      console.log('Tarea aprobada y guardada:', task);
+      console.log('Lista actualizada de tareas:', tasksData);
+      
+      // Actualizar el balance del portafolio si es una transacción de compra/venta
+      if (task.type === 'buy' || task.type === 'sell') {
+        await actualizarBalancePortafolio(task);
+      }
+      
+      // Marcar la tarea como aprobada para no mostrarla de nuevo
+      setApprovedTaskIds(prev => new Set(prev).add(task.id));
       
       toast({
-        title: "Tarea creada",
+        title: "Tarea aprobada",
         description: "La tarea ha sido agregada a tus tareas pendientes",
       });
     } catch (error) {
-      console.error('Error guardando tarea:', error);
+      console.error('Error al aprobar tarea:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo aprobar la tarea",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const actualizarBalancePortafolio = async (task: any) => {
+    try {
+      const responsePortfolio = await fetch('/portfolio-data.json');
+      const portfolioData = await responsePortfolio.json();
+      
+      // Calcular el valor de la transacción en USD
+      const amount = parseFloat(task.amount);
+      const gasEstimate = parseFloat(task.gasEstimate.replace('$', ''));
+      
+      // Precios aproximados de tokens (en producción usar API real)
+      const tokenPrices: { [key: string]: number } = {
+        'BTC': 30000,
+        'ETH': 3200,
+        'SOL': 100,
+        'USDC': 1,
+        'USDT': 1,
+      };
+      
+      const tokenPrice = tokenPrices[task.token] || 1;
+      const transactionValue = amount * tokenPrice;
+      
+      // Actualizar el valor total del portafolio
+      if (task.type === 'buy') {
+        portfolioData.totalValue += transactionValue + gasEstimate;
+      } else if (task.type === 'sell') {
+        portfolioData.totalValue -= transactionValue - gasEstimate;
+      }
+      
+      console.log('Balance del portafolio actualizado:', portfolioData);
+      
+      toast({
+        title: "Balance actualizado",
+        description: `Nuevo balance: $${portfolioData.totalValue.toFixed(2)}`,
+      });
+      
+      // En producción, aquí harías un POST/PUT para actualizar el JSON en el servidor
+      // await fetch('/api/portfolio', {
+      //   method: 'PUT',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(portfolioData)
+      // });
+      
+    } catch (error) {
+      console.error('Error al actualizar balance del portafolio:', error);
     }
   };
 
@@ -344,8 +395,8 @@ export const AIChat = () => {
                   </span>
                 </div>
                 
-                {/* Tarjeta de tarea si existe */}
-                {message.task && (
+                {/* Tarjeta de tarea si existe y no ha sido aprobada */}
+                {message.task && !approvedTaskIds.has(message.task.id) && (
                   <div className="bg-gradient-to-br from-accent/20 to-primary/10 border border-accent/30 rounded-xl p-4 shadow-lg animate-slide-up">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
@@ -363,7 +414,7 @@ export const AIChat = () => {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                       <div className="bg-card/50 rounded-lg p-2">
                         <p className="text-muted-foreground">Monto</p>
                         <p className="font-semibold">{message.task.amount} {message.task.token}</p>
@@ -377,6 +428,15 @@ export const AIChat = () => {
                         <p className="font-semibold text-accent">{message.task.gasEstimate}</p>
                       </div>
                     </div>
+                    
+                    <Button 
+                      onClick={() => aprobarTarea(message.task!)}
+                      className="w-full"
+                      size="sm"
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Aprobar Tarea
+                    </Button>
                   </div>
                 )}
               </div>
