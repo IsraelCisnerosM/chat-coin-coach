@@ -101,11 +101,8 @@ const Index = () => {
     <div className="min-h-screen bg-[hsl(0,0%,98%)] pb-safe">
       {/* Balance Card */}
       <div className="mx-4 mt-4 p-6 rounded-3xl relative overflow-hidden shadow-md" style={{ background: 'linear-gradient(180deg, hsl(259, 59%, 46%), hsl(263, 68%, 33%))' }}>
-        {/* Overlay de brillo */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-        
         {/* Contenido */}
-        <div className="relative z-10">
+        <div className="relative">
           {/* Header Row */}
           <div className="flex justify-between items-center mb-4">
             <span className="text-sm font-medium text-white/80">Saldo Disponible</span>

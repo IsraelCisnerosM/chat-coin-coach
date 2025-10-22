@@ -16,7 +16,7 @@ export function Layout({ children }: LayoutProps) {
           {/* Header */}
           <header className="h-14 border-b border-border bg-card flex items-center px-4 sticky top-0 z-10">
             <SidebarTrigger className="mr-4" />
-            <h1 className="text-lg font-semibold text-foreground">AI Investment</h1>
+            <h1 className="text-lg font-semibold text-foreground">Blocky</h1>
           </header>
 
           {/* Main Content */}
