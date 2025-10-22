@@ -93,7 +93,7 @@ async function detectarIntencion(user_input: string) {
       content: `Eres un sistema de clasificación de intenciones para un asistente de transacciones de criptomonedas.
 Clasifica la consulta en UNA de estas categorías:
 A. TRANSFERENCIA → si quiere enviar dinero/criptos a alguien
-B. REGISTRO_CONTACTO → si quiere guardar un contacto nuevo con su numero telefono solamente, NO PIDAS WALLET.
+B. REGISTRO_CONTACTO → si quiere guardar un contacto nuevo con su numero telefono solamente, NO PIDAS WALLET NO PIDAS CORREO ES OPCIONAL.
 C. PAGO_SERVICIO → si quiere pagar un servicio (luz, agua, internet, etc)
 D. MERCADO → si pregunta por precios actuales, conversiones de moneda o valores de mercado
 E. CONSULTA → para cualquier otra pregunta o solicitud de información
