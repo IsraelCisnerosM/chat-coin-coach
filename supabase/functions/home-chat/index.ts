@@ -14,6 +14,21 @@ const MODELO_CHAT = 'gemini-2.5-flash';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+// Base de conocimiento para educación
+const BASE_CONOCIMIENTO = {
+  criptomonedas: {
+    bitcoin: "Bitcoin (BTC) es la primera criptomoneda descentralizada creada en 2009. Funciona sobre tecnología blockchain.",
+    ethereum: "Ethereum (ETH) es una plataforma blockchain que permite contratos inteligentes y aplicaciones descentralizadas.",
+    stablecoins: "Las stablecoins son criptomonedas cuyo valor está anclado a activos estables como el dólar estadounidense."
+  },
+  conceptos: {
+    blockchain: "Blockchain es una tecnología de registro distribuido que permite transacciones seguras sin intermediarios.",
+    wallet: "Una wallet o billetera digital es un software que permite almacenar, enviar y recibir criptomonedas."
+  }
+};
+
 async function chatConIA(messages: any[]) {
   try {
     const response = await fetch(`${HICAP_BASE_URL}/chat/completions`, {
@@ -67,8 +82,20 @@ Responde SOLO con UNA PALABRA: INVERSIONES, TRANSACCIONES o EDUCACION.`
   if (categoria.includes('TRANSACCIONES') || categoria.includes('TRANSACCION')) return 'TRANSACCIONES';
   if (categoria.includes('EDUCACION')) return 'EDUCACION';
   
-  // Por defecto, educación
   return 'EDUCACION';
+}
+
+async function obtenerPrecioActual(activo_id: string = "bitcoin", vs_currency: string = "usd") {
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${activo_id}&vs_currencies=${vs_currency}&include_24hr_change=true`;
+  try {
+    const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data[activo_id] || null;
+  } catch (error) {
+    console.error(`Error obteniendo precio de ${activo_id}:`, error);
+    return null;
+  }
 }
 
 serve(async (req) => {
@@ -103,45 +130,77 @@ serve(async (req) => {
     const tipoIntencion = await clasificarIntencion(message);
     console.log('🎯 Intención detectada:', tipoIntencion);
 
-    // Crear cliente de Supabase
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    let systemPrompt = '';
+    let contexto_adicional = '';
 
-    // Delegar a la función apropiada
-    let targetFunction = '';
-    switch (tipoIntencion) {
-      case 'INVERSIONES':
-        targetFunction = 'ai-chat';
-        break;
-      case 'TRANSACCIONES':
-        targetFunction = 'transaction-chat';
-        break;
-      case 'EDUCACION':
-        targetFunction = 'education-chat';
-        break;
-      default:
-        targetFunction = 'education-chat';
+    // Configurar prompt según tipo de intención
+    if (tipoIntencion === 'INVERSIONES') {
+      const btc = await obtenerPrecioActual("bitcoin", "usd");
+      const eth = await obtenerPrecioActual("ethereum", "usd");
+      
+      contexto_adicional = "Contexto de mercado actual:\n";
+      if (btc) {
+        contexto_adicional += `- Bitcoin: $${btc.usd?.toFixed(2) || 'N/A'}, cambio 24h: ${btc.usd_24h_change?.toFixed(2) || 'N/A'}%\n`;
+      }
+      if (eth) {
+        contexto_adicional += `- Ethereum: $${eth.usd?.toFixed(2) || 'N/A'}, cambio 24h: ${eth.usd_24h_change?.toFixed(2) || 'N/A'}%\n`;
+      }
+
+      systemPrompt = `Eres un asesor financiero especializado en inversiones en criptomonedas. Ayuda al usuario con análisis de portafolio, recomendaciones de inversión y estrategias de trading.
+
+${contexto_adicional}
+
+Responde de manera profesional pero accesible, sin tecnicismos innecesarios.`;
+
+    } else if (tipoIntencion === 'TRANSACCIONES') {
+      // Buscar contactos si menciona transferencia
+      if (message.toLowerCase().includes('enviar') || message.toLowerCase().includes('transferir')) {
+        const palabras = message.toLowerCase().split(" ");
+        const indiceA = palabras.indexOf("a");
+        if (indiceA !== -1 && indiceA < palabras.length - 1) {
+          const posibleNombre = palabras.slice(indiceA + 1).join(" ");
+          const { data: contactos } = await supabase
+            .from("contacts")
+            .select("*")
+            .or(`name.ilike.%${posibleNombre}%,phone.ilike.%${posibleNombre}%`)
+            .limit(5);
+
+          if (contactos && contactos.length > 0) {
+            contexto_adicional = `\nContactos encontrados: ${JSON.stringify(contactos, null, 2)}`;
+          }
+        }
+      }
+
+      systemPrompt = `Eres un asistente experto en transacciones de criptomonedas. Ayudas a enviar dinero, registrar contactos y pagar servicios.
+
+${contexto_adicional}
+
+Cuando detectes una intención de transferencia, pregunta por los detalles necesarios (destinatario, monto, criptomoneda).
+Siempre usa lenguaje claro y sin tecnicismos.`;
+
+    } else { // EDUCACION
+      systemPrompt = `Eres un tutor financiero amigable especializado en educación sobre criptomonedas y finanzas. Tu objetivo es enseñar conceptos de manera clara y accesible.
+
+Base de conocimiento disponible:
+${JSON.stringify(BASE_CONOCIMIENTO, null, 2)}
+
+Cuando el usuario pregunte sobre conceptos, explícalos de forma simple con ejemplos prácticos. Si preguntan por precios actuales, búscalos en tiempo real.`;
     }
 
-    console.log('🔀 Delegando a:', targetFunction);
+    // Construir mensajes para la IA
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...history,
+      { role: 'user', content: message }
+    ];
 
-    // Llamar a la función apropiada
-    const { data: functionData, error: functionError } = await supabase.functions.invoke(targetFunction, {
-      body: { message, history, isFirstMessage: false }
-    });
+    // Obtener respuesta
+    const assistant_response = await chatConIA(messages);
 
-    if (functionError) {
-      console.error('❌ Error llamando a función:', functionError);
-      throw new Error(`Error en función ${targetFunction}: ${functionError.message}`);
-    }
-
-    console.log('✅ Respuesta recibida de:', targetFunction);
-
-    // Retornar respuesta con información del bot usado
     return new Response(
       JSON.stringify({ 
-        ...functionData,
-        botType: tipoIntencion.toLowerCase(),
-        delegatedTo: targetFunction
+        response: assistant_response,
+        botType: tipoIntencion.toLowerCase()
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
