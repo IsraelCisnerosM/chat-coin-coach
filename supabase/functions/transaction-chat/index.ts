@@ -1,19 +1,19 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.76.1';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const HICAP_API_KEY = Deno.env.get('HICAP_API_KEY');
+const HICAP_API_KEY = Deno.env.get("HICAP_API_KEY");
 const HICAP_BASE_URL = "https://api.hicap.ai/v2/openai";
 const MODELO_CHAT = "gemini-2.5-flash";
 
 // Inicializar cliente de Supabase
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Función para obtener precios actuales de criptomonedas
@@ -33,22 +33,22 @@ async function obtenerPrecioActual(activo_id: string = "bitcoin", vs_currency: s
 // Función para convertir entre criptomonedas y fiat
 async function convertirMoneda(cantidad: number, de: string, a: string = "mxn") {
   const cripto_ids: { [key: string]: string } = {
-    'btc': 'bitcoin',
-    'bitcoin': 'bitcoin',
-    'eth': 'ethereum',
-    'ethereum': 'ethereum',
-    'usdt': 'tether',
-    'tether': 'tether',
-    'usdc': 'usd-coin',
-    'sol': 'solana',
-    'solana': 'solana',
-    'matic': 'matic-network',
-    'polygon': 'matic-network'
+    btc: "bitcoin",
+    bitcoin: "bitcoin",
+    eth: "ethereum",
+    ethereum: "ethereum",
+    usdt: "tether",
+    tether: "tether",
+    usdc: "usd-coin",
+    sol: "solana",
+    solana: "solana",
+    matic: "matic-network",
+    polygon: "matic-network",
   };
 
   const de_id = cripto_ids[de.toLowerCase()] || de.toLowerCase();
   const precio = await obtenerPrecioActual(de_id, a.toLowerCase());
-  
+
   if (precio && precio[a.toLowerCase()]) {
     return cantidad * precio[a.toLowerCase()];
   }
@@ -58,10 +58,10 @@ async function convertirMoneda(cantidad: number, de: string, a: string = "mxn") 
 async function chatConIA(messages: any[]) {
   try {
     const response = await fetch(`${HICAP_BASE_URL}/chat/completions`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'api-key': HICAP_API_KEY!,
-        'Content-Type': 'application/json',
+        "api-key": HICAP_API_KEY!,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: MODELO_CHAT,
@@ -71,7 +71,7 @@ async function chatConIA(messages: any[]) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Error de API:', response.status, errorText);
+      console.error("Error de API:", response.status, errorText);
       return `[ERROR] Error al llamar a la API: ${response.status}`;
     }
 
@@ -81,8 +81,8 @@ async function chatConIA(messages: any[]) {
     }
     return "No se recibió respuesta del modelo.";
   } catch (error) {
-    console.error('Error en chatConIA:', error);
-    return `[ERROR] ${error instanceof Error ? error.message : 'Error desconocido'}`;
+    console.error("Error en chatConIA:", error);
+    return `[ERROR] ${error instanceof Error ? error.message : "Error desconocido"}`;
   }
 }
 
@@ -98,14 +98,14 @@ C. PAGO_SERVICIO → si quiere pagar un servicio (luz, agua, internet, etc)
 D. MERCADO → si pregunta por precios actuales, conversiones de moneda o valores de mercado
 E. CONSULTA → para cualquier otra pregunta o solicitud de información
 
-Responde SOLO con UNA PALABRA en mayúsculas: TRANSFERENCIA, REGISTRO_CONTACTO, PAGO_SERVICIO, MERCADO o CONSULTA.`
+Responde SOLO con UNA PALABRA en mayúsculas: TRANSFERENCIA, REGISTRO_CONTACTO, PAGO_SERVICIO, MERCADO o CONSULTA.`,
     },
-    { role: "user", content: user_input }
+    { role: "user", content: user_input },
   ];
 
   const respuesta = await chatConIA(prompt);
   let categoria = respuesta.trim().toUpperCase();
-  
+
   if (categoria.includes("TRANSFERENCIA")) return "TRANSFERENCIA";
   if (categoria.includes("REGISTRO")) return "REGISTRO_CONTACTO";
   if (categoria.includes("PAGO")) return "PAGO_SERVICIO";
@@ -115,20 +115,20 @@ Responde SOLO con UNA PALABRA en mayúsculas: TRANSFERENCIA, REGISTRO_CONTACTO, 
 
 async function buscarContacto(query: string) {
   const { data, error } = await supabase
-    .from('contacts')
-    .select('*')
+    .from("contacts")
+    .select("*")
     .or(`name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%`)
     .limit(5);
-  
+
   if (error) {
-    console.error('Error buscando contactos:', error);
+    console.error("Error buscando contactos:", error);
     return [];
   }
   return data || [];
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -138,9 +138,8 @@ serve(async (req) => {
     const systemPrompt = `Eres un asistente experto en transferencias de criptomonedas. Tu misión es hacer que las transacciones sean simples, seguras y sin fricción para el usuario.
 
 PRINCIPIOS CLAVE:
-1. **Simplicidad**: Usa lenguaje claro, evita tecnicismos innecesarios
+1. **Simplicidad**: Usa lenguaje claro, NO USES tecnicismos.
 2. **Seguridad**: Siempre verifica datos antes de ejecutar transacciones
-3. **Recomendaciones inteligentes**: Sugiere la mejor red según el monto y la urgencia
 4. **Conversiones automáticas**: Ayuda a convertir entre monedas fiat y criptos
 5. **Contexto del mercado**: Usa datos en tiempo real para dar recomendaciones precisas
 
@@ -214,50 +213,50 @@ Responde siempre en español de manera amigable y profesional.`;
 
     if (isFirstMessage && (!clientMessages || clientMessages.length === 0)) {
       return new Response(
-        JSON.stringify({ 
-          response: "¡Hola! Soy tu asistente de transacciones. Puedo ayudarte a enviar dinero, registrar contactos y pagar servicios. ¿Qué necesitas hacer hoy?",
-          intencion: null 
+        JSON.stringify({
+          response:
+            "¡Hola! Soy tu asistente de transacciones. Puedo ayudarte a enviar dinero, registrar contactos y pagar servicios. ¿Qué necesitas hacer hoy?",
+          intencion: null,
         }),
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
     if (!clientMessages || clientMessages.length === 0) {
-      throw new Error('No se proporcionaron mensajes');
+      throw new Error("No se proporcionaron mensajes");
     }
 
     const lastUserMessage = clientMessages[clientMessages.length - 1];
-    if (lastUserMessage.role === 'user') {
+    if (lastUserMessage.role === "user") {
       const user_input = lastUserMessage.content;
-      
+
       // Detectar intención
       const intencion = await detectarIntencion(user_input);
-      console.log('[Debug] Intención detectada:', intencion);
+      console.log("[Debug] Intención detectada:", intencion);
 
       let contexto_adicional = "";
 
       // Si es transferencia, buscar contactos
       if (intencion === "TRANSFERENCIA") {
-        const palabras = user_input.toLowerCase().split(' ');
-        const indiceA = palabras.indexOf('a');
+        const palabras = user_input.toLowerCase().split(" ");
+        const indiceA = palabras.indexOf("a");
         if (indiceA !== -1 && indiceA < palabras.length - 1) {
-          const posibleNombre = palabras.slice(indiceA + 1).join(' ');
+          const posibleNombre = palabras.slice(indiceA + 1).join(" ");
           const contactos = await buscarContacto(posibleNombre);
-          
+
           if (contactos.length > 0) {
             contexto_adicional = `\nContactos encontrados: ${JSON.stringify(contactos, null, 2)}`;
           } else {
-            contexto_adicional = "\nNo se encontraron contactos con ese nombre. Pregunta si desea registrar un nuevo contacto.";
+            contexto_adicional =
+              "\nNo se encontraron contactos con ese nombre. Pregunta si desea registrar un nuevo contacto.";
           }
         }
       } else if (intencion === "PAGO_SERVICIO") {
         // Buscar servicios guardados
-        const { data: servicios } = await supabase
-          .from('saved_services')
-          .select('*');
-        
+        const { data: servicios } = await supabase.from("saved_services").select("*");
+
         if (servicios && servicios.length > 0) {
           contexto_adicional = `\n\nServicios guardados:\n${JSON.stringify(servicios, null, 2)}`;
         }
@@ -268,7 +267,7 @@ Responde siempre en español de manera amigable y profesional.`;
         const usdt = await obtenerPrecioActual("tether", "usd");
         const mxn_btc = await obtenerPrecioActual("bitcoin", "mxn");
         const mxn_eth = await obtenerPrecioActual("ethereum", "mxn");
-        
+
         contexto_adicional = "\n\nPrecios de mercado actuales:\n";
         if (btc) {
           contexto_adicional += `- Bitcoin (BTC): $${btc.usd?.toFixed(2)} USD`;
@@ -291,14 +290,11 @@ Responde siempre en español de manera amigable y profesional.`;
       }
 
       // Construir mensajes
-      const messages = [
-        { role: "system", content: systemPrompt + contexto_adicional },
-        ...clientMessages
-      ];
+      const messages = [{ role: "system", content: systemPrompt + contexto_adicional }, ...clientMessages];
 
       // Obtener respuesta
       let assistant_response = await chatConIA(messages);
-      
+
       // Detectar acción
       let actionJson = null;
       if (assistant_response.includes("###ACTION_JSON###")) {
@@ -315,27 +311,23 @@ Responde siempre en español de manera amigable y profesional.`;
       }
 
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           response: assistant_response,
           intencion,
-          action: actionJson
+          action: actionJson,
         }),
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    throw new Error('No se encontró un mensaje de usuario válido');
-
+    throw new Error("No se encontró un mensaje de usuario válido");
   } catch (error) {
-    console.error('Error en transaction-chat:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Error desconocido' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    console.error("Error en transaction-chat:", error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Error desconocido" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
