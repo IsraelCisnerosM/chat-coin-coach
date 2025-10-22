@@ -34,8 +34,14 @@ export default function Educacion() {
     setIsLoading(true);
 
     try {
+      const isFirstMessage = messages.length === 0;
+      
       const { data, error } = await supabase.functions.invoke('education-chat', {
-        body: { message: messageToSend, history: messages }
+        body: { 
+          message: messageToSend, 
+          history: messages,
+          isFirstMessage 
+        }
       });
 
       if (error) throw error;
@@ -45,6 +51,17 @@ export default function Educacion() {
         content: data.response || "Lo siento, no pude procesar tu solicitud."
       };
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Log para debugging de task e insight
+      if (data.task) {
+        console.log('📋 Tarea generada:', data.task);
+      }
+      if (data.insight) {
+        console.log('💡 Insight generado:', data.insight);
+      }
+      if (data.intencion) {
+        console.log('🎯 Intención detectada:', data.intencion);
+      }
     } catch (error) {
       console.error('Error en chat educativo:', error);
       const errorMessage: Message = {
