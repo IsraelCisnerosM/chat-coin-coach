@@ -9,12 +9,51 @@ const corsHeaders = {
 
 const HICAP_API_KEY = Deno.env.get('HICAP_API_KEY');
 const HICAP_BASE_URL = "https://api.hicap.ai/v2/openai";
-const MODELO_CHAT = "gemini-2.5-pro";
+const MODELO_CHAT = "gemini-2.5-flash";
 
 // Inicializar cliente de Supabase
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Función para obtener precios actuales de criptomonedas
+async function obtenerPrecioActual(activo_id: string = "bitcoin", vs_currency: string = "usd") {
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${activo_id}&vs_currencies=${vs_currency}&include_24hr_change=true`;
+  try {
+    const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data[activo_id] || null;
+  } catch (error) {
+    console.error(`Error obteniendo precio de ${activo_id}:`, error);
+    return null;
+  }
+}
+
+// Función para convertir entre criptomonedas y fiat
+async function convertirMoneda(cantidad: number, de: string, a: string = "mxn") {
+  const cripto_ids: { [key: string]: string } = {
+    'btc': 'bitcoin',
+    'bitcoin': 'bitcoin',
+    'eth': 'ethereum',
+    'ethereum': 'ethereum',
+    'usdt': 'tether',
+    'tether': 'tether',
+    'usdc': 'usd-coin',
+    'sol': 'solana',
+    'solana': 'solana',
+    'matic': 'matic-network',
+    'polygon': 'matic-network'
+  };
+
+  const de_id = cripto_ids[de.toLowerCase()] || de.toLowerCase();
+  const precio = await obtenerPrecioActual(de_id, a.toLowerCase());
+  
+  if (precio && precio[a.toLowerCase()]) {
+    return cantidad * precio[a.toLowerCase()];
+  }
+  return null;
+}
 
 async function chatConIA(messages: any[]) {
   try {
@@ -51,13 +90,15 @@ async function detectarIntencion(user_input: string) {
   const prompt = [
     {
       role: "system",
-      content: `Clasifica la siguiente consulta del usuario en UNA de estas categorías:
-A. TRANSFERENCIA → si quiere enviar dinero a alguien
-B. REGISTRO_CONTACTO → si quiere agregar un nuevo contacto
-C. PAGO_SERVICIO → si quiere pagar un servicio
-D. CONSULTA → si es una pregunta general
+      content: `Eres un sistema de clasificación de intenciones para un asistente de transacciones de criptomonedas.
+Clasifica la consulta en UNA de estas categorías:
+A. TRANSFERENCIA → si quiere enviar dinero/criptos a alguien
+B. REGISTRO_CONTACTO → si quiere guardar un contacto nuevo
+C. PAGO_SERVICIO → si quiere pagar un servicio (luz, agua, internet, etc)
+D. MERCADO → si pregunta por precios actuales, conversiones de moneda o valores de mercado
+E. CONSULTA → para cualquier otra pregunta o solicitud de información
 
-Responde SOLO con UNA palabra: TRANSFERENCIA, REGISTRO_CONTACTO, PAGO_SERVICIO o CONSULTA.`
+Responde SOLO con UNA PALABRA en mayúsculas: TRANSFERENCIA, REGISTRO_CONTACTO, PAGO_SERVICIO, MERCADO o CONSULTA.`
     },
     { role: "user", content: user_input }
   ];
@@ -68,6 +109,7 @@ Responde SOLO con UNA palabra: TRANSFERENCIA, REGISTRO_CONTACTO, PAGO_SERVICIO o
   if (categoria.includes("TRANSFERENCIA")) return "TRANSFERENCIA";
   if (categoria.includes("REGISTRO")) return "REGISTRO_CONTACTO";
   if (categoria.includes("PAGO")) return "PAGO_SERVICIO";
+  if (categoria.includes("MERCADO")) return "MERCADO";
   return "CONSULTA";
 }
 
@@ -93,59 +135,82 @@ serve(async (req) => {
   try {
     const { messages: clientMessages, isFirstMessage } = await req.json();
 
-    const systemPrompt = `Eres un asistente especializado en transacciones de criptomonedas. Tu objetivo es ayudar al usuario a:
-1. Realizar transferencias de criptomonedas a contactos registrados
-2. Registrar nuevos contactos (necesitas nombre y email o teléfono)
-3. Pagar servicios guardados
+    const systemPrompt = `Eres un asistente experto en transferencias de criptomonedas. Tu misión es hacer que las transacciones sean simples, seguras y sin fricción para el usuario.
 
-IMPORTANTE: Cuando necesites ejecutar una acción, debes responder con un JSON al final de tu mensaje entre los marcadores ###ACTION_JSON###:
+PRINCIPIOS CLAVE:
+1. **Simplicidad**: Usa lenguaje claro, evita tecnicismos innecesarios
+2. **Seguridad**: Siempre verifica datos antes de ejecutar transacciones
+3. **Recomendaciones inteligentes**: Sugiere la mejor red según el monto y la urgencia
+4. **Conversiones automáticas**: Ayuda a convertir entre monedas fiat y criptos
+5. **Contexto del mercado**: Usa datos en tiempo real para dar recomendaciones precisas
 
-Para transferencias:
+CAPACIDADES:
+- Realizar transferencias de criptomonedas
+- Registrar y gestionar contactos
+- Pagar servicios con cripto
+- Consultar precios actuales y hacer conversiones
+- Recomendar redes óptimas según el caso de uso
+
+RECOMENDACIONES DE REDES:
+- **Polygon**: Óptima para montos pequeños (<$100 USD), fees muy bajos (~$0.01-0.50)
+- **BSC (Binance Smart Chain)**: Balance entre velocidad y costo, fees bajos (~$0.20-1.00)
+- **Ethereum Mainnet**: Para grandes montos (>$1000 USD) donde seguridad es prioritaria, fees altos (~$5-50)
+- **Arbitrum/Optimism**: Layer 2 de Ethereum, buenos fees (~$0.50-2.00), alta seguridad
+- **Solana**: Ultra rápida y barata (~$0.0001-0.01), ideal para microtransacciones
+
+CONVERSIONES:
+- Siempre ofrece convertir pesos mexicanos (MXN) a la cripto equivalente
+- Usa los precios de mercado actuales
+- Explica las comisiones estimadas (gas fees)
+
+IMPORTANTE: Cuando detectes una intención clara de acción, genera un JSON al final entre marcadores ###ACTION_JSON###
+
+Para TRANSFERENCIAS:
 ###ACTION_JSON###
 {
   "id": "action-[número único]",
   "type": "transfer",
   "data": {
     "amount": "[cantidad]",
-    "token": "[BTC|ETH|USDT|etc]",
-    "network": "[Ethereum|Polygon|etc]",
-    "recipient_name": "[nombre del destinatario]",
+    "token": "[símbolo]",
+    "network": "[red]",
+    "recipient_name": "[nombre]",
     "recipient_email": "[email]",
-    "description": "[descripción opcional]"
+    "description": "[descripción]"
   }
 }
 ###ACTION_JSON###
 
-Para registro de contactos:
+Para REGISTRO CONTACTO:
 ###ACTION_JSON###
 {
   "id": "action-[número único]",
   "type": "contact_register",
   "data": {
-    "name": "[nombre completo]",
+    "name": "[nombre]",
     "email": "[email]",
-    "phone": "[teléfono opcional]",
-    "wallet_address": "[dirección opcional]"
+    "phone": "[teléfono]",
+    "wallet_address": "[wallet opcional]"
   }
 }
 ###ACTION_JSON###
 
-Para pagos de servicios:
+Para PAGO SERVICIO:
 ###ACTION_JSON###
 {
   "id": "action-[número único]",
   "type": "service_payment",
   "data": {
-    "service_name": "[nombre del servicio]",
-    "amount": "[cantidad]",
-    "token": "[USDT|USDC|etc]",
+    "service_name": "[servicio]",
+    "amount": "[monto]",
+    "token": "[cripto]",
     "network": "[red]",
     "description": "[descripción]"
   }
 }
 ###ACTION_JSON###
 
-Sé claro, amigable y eficiente. Siempre confirma los detalles antes de crear una acción.`;
+Responde siempre en español de manera amigable y profesional.`;
 
     if (isFirstMessage && (!clientMessages || clientMessages.length === 0)) {
       return new Response(
@@ -175,7 +240,6 @@ Sé claro, amigable y eficiente. Siempre confirma los detalles antes de crear un
 
       // Si es transferencia, buscar contactos
       if (intencion === "TRANSFERENCIA") {
-        // Extraer posible nombre del contacto
         const palabras = user_input.toLowerCase().split(' ');
         const indiceA = palabras.indexOf('a');
         if (indiceA !== -1 && indiceA < palabras.length - 1) {
@@ -188,6 +252,42 @@ Sé claro, amigable y eficiente. Siempre confirma los detalles antes de crear un
             contexto_adicional = "\nNo se encontraron contactos con ese nombre. Pregunta si desea registrar un nuevo contacto.";
           }
         }
+      } else if (intencion === "PAGO_SERVICIO") {
+        // Buscar servicios guardados
+        const { data: servicios } = await supabase
+          .from('saved_services')
+          .select('*');
+        
+        if (servicios && servicios.length > 0) {
+          contexto_adicional = `\n\nServicios guardados:\n${JSON.stringify(servicios, null, 2)}`;
+        }
+      } else if (intencion === "MERCADO") {
+        // Obtener precios actuales
+        const btc = await obtenerPrecioActual("bitcoin", "usd");
+        const eth = await obtenerPrecioActual("ethereum", "usd");
+        const usdt = await obtenerPrecioActual("tether", "usd");
+        const mxn_btc = await obtenerPrecioActual("bitcoin", "mxn");
+        const mxn_eth = await obtenerPrecioActual("ethereum", "mxn");
+        
+        contexto_adicional = "\n\nPrecios de mercado actuales:\n";
+        if (btc) {
+          contexto_adicional += `- Bitcoin (BTC): $${btc.usd?.toFixed(2)} USD`;
+          if (mxn_btc?.mxn) {
+            contexto_adicional += ` | $${mxn_btc.mxn.toFixed(2)} MXN`;
+          }
+          contexto_adicional += ` | Cambio 24h: ${btc.usd_24h_change?.toFixed(2)}%\n`;
+        }
+        if (eth) {
+          contexto_adicional += `- Ethereum (ETH): $${eth.usd?.toFixed(2)} USD`;
+          if (mxn_eth?.mxn) {
+            contexto_adicional += ` | $${mxn_eth.mxn.toFixed(2)} MXN`;
+          }
+          contexto_adicional += ` | Cambio 24h: ${eth.usd_24h_change?.toFixed(2)}%\n`;
+        }
+        if (usdt) {
+          contexto_adicional += `- Tether (USDT): $${usdt.usd?.toFixed(4)} USD (stablecoin)\n`;
+        }
+        contexto_adicional += "\nTasas de cambio aprox: 1 USD = 20 MXN";
       }
 
       // Construir mensajes

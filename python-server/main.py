@@ -282,6 +282,243 @@ async def transcribe(request: TranscribeRequest):
         print(f"Error en transcripción: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+def convertir_moneda(cantidad, de, a="mxn"):
+    """Convierte entre criptomonedas y monedas fiat"""
+    cripto_ids = {
+        'btc': 'bitcoin',
+        'bitcoin': 'bitcoin',
+        'eth': 'ethereum',
+        'ethereum': 'ethereum',
+        'usdt': 'tether',
+        'tether': 'tether',
+        'usdc': 'usd-coin',
+        'sol': 'solana',
+        'solana': 'solana',
+        'matic': 'matic-network',
+        'polygon': 'matic-network'
+    }
+    
+    de_id = cripto_ids.get(de.lower(), de.lower())
+    precio = obtener_precio_actual(de_id, a.lower())
+    
+    if precio and a.lower() in precio:
+        return cantidad * precio[a.lower()]
+    return None
+
+@app.post("/transaction-chat")
+async def transaction_chat(request: ChatRequest):
+    """Endpoint para el chatbot de transacciones"""
+    try:
+        messages = request.messages
+        
+        # Si es el primer mensaje, enviar saludo
+        if request.isFirstMessage or len(messages) == 0:
+            return {
+                "response": "¡Hola! Soy tu asistente de transacciones. Puedo ayudarte a enviar dinero, registrar contactos y pagar servicios. ¿Qué necesitas hacer hoy?",
+                "intencion": None
+            }
+        
+        # Obtener el último mensaje del usuario
+        last_user_message = None
+        for msg in reversed(messages):
+            if msg.get('role') == 'user':
+                last_user_message = msg.get('content', '')
+                break
+        
+        if not last_user_message:
+            raise HTTPException(status_code=400, detail="No se encontró mensaje del usuario")
+        
+        # Clasificar intención para transacciones
+        tipo_intencion = clasificar_intencion_transacciones(last_user_message)
+        
+        # System prompt específico para transacciones
+        transaction_system_prompt = """Eres un asistente experto en transferencias de criptomonedas. Tu misión es hacer que las transacciones sean simples, seguras y sin fricción para el usuario.
+
+PRINCIPIOS CLAVE:
+1. **Simplicidad**: Usa lenguaje claro, evita tecnicismos innecesarios
+2. **Seguridad**: Siempre verifica datos antes de ejecutar transacciones
+3. **Recomendaciones inteligentes**: Sugiere la mejor red según el monto y la urgencia
+4. **Conversiones automáticas**: Ayuda a convertir entre monedas fiat y criptos
+5. **Contexto del mercado**: Usa datos en tiempo real para dar recomendaciones precisas
+
+CAPACIDADES:
+- Realizar transferencias de criptomonedas
+- Registrar y gestionar contactos
+- Pagar servicios con cripto
+- Consultar precios actuales y hacer conversiones
+- Recomendar redes óptimas según el caso de uso
+
+RECOMENDACIONES DE REDES:
+- **Polygon**: Óptima para montos pequeños (<$100 USD), fees muy bajos (~$0.01-0.50)
+- **BSC (Binance Smart Chain)**: Balance entre velocidad y costo, fees bajos (~$0.20-1.00)
+- **Ethereum Mainnet**: Para grandes montos (>$1000 USD) donde seguridad es prioritaria, fees altos (~$5-50)
+- **Arbitrum/Optimism**: Layer 2 de Ethereum, buenos fees (~$0.50-2.00), alta seguridad
+- **Solana**: Ultra rápida y barata (~$0.0001-0.01), ideal para microtransacciones
+
+CONVERSIONES:
+- Siempre ofrece convertir pesos mexicanos (MXN) a la cripto equivalente
+- Usa los precios de mercado actuales
+- Explica las comisiones estimadas (gas fees)
+
+IMPORTANTE: Cuando detectes una intención clara de acción, genera un JSON al final entre marcadores ###ACTION_JSON###
+
+Para TRANSFERENCIAS:
+###ACTION_JSON###
+{
+  "id": "action-[número]",
+  "type": "transfer",
+  "data": {
+    "amount": "[cantidad]",
+    "token": "[símbolo]",
+    "network": "[red]",
+    "recipient_name": "[nombre]",
+    "recipient_email": "[email]",
+    "description": "[descripción]"
+  }
+}
+###ACTION_JSON###
+
+Para REGISTRO CONTACTO:
+###ACTION_JSON###
+{
+  "id": "action-[número]",
+  "type": "contact_register",
+  "data": {
+    "name": "[nombre]",
+    "email": "[email]",
+    "phone": "[teléfono]",
+    "wallet_address": "[wallet opcional]"
+  }
+}
+###ACTION_JSON###
+
+Para PAGO SERVICIO:
+###ACTION_JSON###
+{
+  "id": "action-[número]",
+  "type": "service_payment",
+  "data": {
+    "service_name": "[servicio]",
+    "amount": "[monto]",
+    "token": "[cripto]",
+    "network": "[red]",
+    "description": "[descripción]"
+  }
+}
+###ACTION_JSON###
+
+Responde siempre en español de manera amigable y profesional."""
+        
+        # Construir mensajes para la IA
+        ai_messages = [{"role": "system", "content": transaction_system_prompt}]
+        
+        # Agregar contexto de mercado si es necesario
+        if tipo_intencion == "MERCADO":
+            btc = obtener_precio_actual("bitcoin", "usd")
+            eth = obtener_precio_actual("ethereum", "usd")
+            usdt = obtener_precio_actual("tether", "usd")
+            mxn_btc = obtener_precio_actual("bitcoin", "mxn")
+            mxn_eth = obtener_precio_actual("ethereum", "mxn")
+            
+            mensaje_contexto = "Precios de mercado actuales:\n"
+            if btc:
+                mensaje_contexto += f"- Bitcoin (BTC): ${btc.get('usd', 'N/A'):.2f} USD"
+                if mxn_btc and 'mxn' in mxn_btc:
+                    mensaje_contexto += f" | ${mxn_btc['mxn']:.2f} MXN"
+                mensaje_contexto += f" | Cambio 24h: {btc.get('usd_24h_change', 0):.2f}%\n"
+            if eth:
+                mensaje_contexto += f"- Ethereum (ETH): ${eth.get('usd', 'N/A'):.2f} USD"
+                if mxn_eth and 'mxn' in mxn_eth:
+                    mensaje_contexto += f" | ${mxn_eth['mxn']:.2f} MXN"
+                mensaje_contexto += f" | Cambio 24h: {eth.get('usd_24h_change', 0):.2f}%\n"
+            if usdt:
+                mensaje_contexto += f"- Tether (USDT): ${usdt.get('usd', 'N/A'):.4f} USD (stablecoin)\n"
+            mensaje_contexto += "\nTasas de cambio aprox: 1 USD = 20 MXN"
+            
+            ai_messages.append({"role": "system", "content": mensaje_contexto})
+        
+        # Agregar historial de mensajes
+        for msg in messages:
+            if msg.get('role') in ['user', 'assistant']:
+                ai_messages.append({
+                    "role": msg['role'],
+                    "content": msg['content']
+                })
+        
+        # Llamar a la IA
+        response = client.chat.completions.create(
+            model=MODELO_CHAT,
+            messages=ai_messages
+        )
+        
+        ai_response = response.choices[0].message.content
+        
+        # Detectar si hay una acción en la respuesta
+        action_json = None
+        if "###ACTION_JSON###" in ai_response:
+            try:
+                parts = ai_response.split("###ACTION_JSON###")
+                if len(parts) >= 3:
+                    json_str = parts[1].strip()
+                    action_json = json.loads(json_str)
+                    # Remover el JSON de la respuesta visible
+                    ai_response = parts[0].strip() + (parts[2].strip() if len(parts) > 2 else "")
+            except Exception as e:
+                print(f"Error parseando action JSON: {e}")
+        
+        return {
+            "response": ai_response,
+            "intencion": tipo_intencion,
+            "action": action_json
+        }
+    
+    except Exception as e:
+        print(f"Error en transaction-chat: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def clasificar_intencion_transacciones(user_input):
+    """Clasificador de intenciones específico para transacciones"""
+    prompt_clasificador = [
+        {
+            "role": "system",
+            "content": (
+                "Eres un sistema de clasificación de intenciones para un asistente de transacciones de criptomonedas. "
+                "Clasifica la consulta en UNA de estas categorías:\n"
+                "A. TRANSFERENCIA → si quiere enviar dinero/criptos a alguien\n"
+                "B. REGISTRO_CONTACTO → si quiere guardar un contacto nuevo\n"
+                "C. PAGO_SERVICIO → si quiere pagar un servicio (luz, agua, internet, etc)\n"
+                "D. MERCADO → si pregunta por precios actuales, conversiones de moneda o valores de mercado\n"
+                "E. CONSULTA → para cualquier otra pregunta o solicitud de información\n\n"
+                "Responde SOLO con UNA PALABRA en mayúsculas."
+            )
+        },
+        {
+            "role": "user",
+            "content": user_input
+        }
+    ]
+    
+    try:
+        response = client.chat.completions.create(
+            model=MODELO_CHAT,
+            messages=prompt_clasificador
+        )
+        categoria = response.choices[0].message.content.strip().upper()
+        
+        if "TRANSFERENCIA" in categoria:
+            return "TRANSFERENCIA"
+        elif "REGISTRO" in categoria or "CONTACTO" in categoria:
+            return "REGISTRO_CONTACTO"
+        elif "PAGO" in categoria or "SERVICIO" in categoria:
+            return "PAGO_SERVICIO"
+        elif "MERCADO" in categoria:
+            return "MERCADO"
+        else:
+            return "CONSULTA"
+    except Exception as e:
+        print(f"Error clasificando intención: {e}")
+        return "CONSULTA"
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
