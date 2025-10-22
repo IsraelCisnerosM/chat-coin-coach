@@ -20,7 +20,7 @@ app.add_middleware(
 )
 
 # Configuración de la API
-HICAP_API_KEY = os.getenv("HICAP_API_KEY", "92549a12e4254ad9b4838d8321a7a19c")
+HICAP_API_KEY = os.getenv("HICAP_API_KEY", "9c2596c15e3a4b9d9517bd85b13a133d")
 HICAP_BASE_URL = "https://api.hicap.ai/v2/openai"
 MODELO_CHAT = "gemini-2.5-pro"
 
