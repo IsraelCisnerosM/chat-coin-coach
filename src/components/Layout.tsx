@@ -18,13 +18,13 @@ export function Layout({ children }: LayoutProps) {
         
         <div className="flex-1 flex flex-col w-full">
           {/* Header */}
-          <header className={`h-14 border-b flex items-center px-4 sticky top-0 z-10 ${isHome ? 'bg-[hsl(0,0%,98%)] border-[hsl(291,64%,62%)]/20' : 'bg-card border-border'}`}>
+          <header className="h-14 border-b border-border bg-card flex items-center px-4 sticky top-0 z-10">
             <SidebarTrigger className="mr-4" />
-            <h1 className={`text-lg font-semibold ${isHome ? 'text-[hsl(263,68%,20%)]' : 'text-foreground'}`}>Blocky</h1>
+            <h1 className="text-lg font-semibold text-foreground">Blocky</h1>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1">
+          <main className={`flex-1 ${isHome ? 'bg-[hsl(0,0%,98%)]' : ''}`}>
             {children}
           </main>
         </div>
