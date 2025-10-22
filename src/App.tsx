@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/Layout";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Inversiones from "./pages/Inversiones";
@@ -15,25 +17,43 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Página de Auth sin Layout */}
-          <Route path="/" element={<Auth />} />
-          
-          {/* Páginas con Layout */}
-          <Route path="/home" element={<Layout><Index /></Layout>} />
-          <Route path="/inversiones" element={<Layout><Inversiones /></Layout>} />
-          <Route path="/transacciones" element={<Layout><Transacciones /></Layout>} />
-          <Route path="/educacion" element={<Layout><Educacion /></Layout>} />
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Página de Auth sin Layout */}
+            <Route path="/" element={<Auth />} />
+            
+            {/* Páginas protegidas con Layout */}
+            <Route path="/home" element={
+              <ProtectedRoute>
+                <Layout><Index /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/inversiones" element={
+              <ProtectedRoute>
+                <Layout><Inversiones /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/transacciones" element={
+              <ProtectedRoute>
+                <Layout><Transacciones /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/educacion" element={
+              <ProtectedRoute>
+                <Layout><Educacion /></Layout>
+              </ProtectedRoute>
+            } />
+            
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

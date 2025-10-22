@@ -151,8 +151,8 @@ export const TransactionChat = () => {
           .insert({
             type: 'transfer',
             amount: action.data.amount,
-            token: action.data.token,
-            network: action.data.network,
+            token: action.data.token || 'USDT',
+            network: action.data.network || 'Polygon',
             recipient_name: action.data.recipient_name,
             recipient_email: action.data.recipient_email,
             description: action.data.description,
@@ -189,8 +189,8 @@ export const TransactionChat = () => {
           .insert({
             type: 'service_payment',
             amount: action.data.amount,
-            token: action.data.token,
-            network: action.data.network,
+            token: action.data.token || 'USDT',
+            network: action.data.network || 'Polygon',
             service_name: action.data.service_name,
             description: action.data.description,
             status: 'completed'
