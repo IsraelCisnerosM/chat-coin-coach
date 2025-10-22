@@ -17,6 +17,8 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         ai: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-[var(--shadow-ai)] hover:scale-[1.02]",
         quick: "bg-card border border-border hover:border-primary/50 hover:bg-primary/5 text-foreground shadow-sm hover:shadow-md",
+        gradient: "bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-md hover:shadow-lg",
+        action: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-md hover:shadow-lg",
       },
       size: {
         default: "h-10 px-4 py-2",
