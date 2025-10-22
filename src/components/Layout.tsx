@@ -20,7 +20,7 @@ export function Layout({ children }: LayoutProps) {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1">
+          <main className="flex-1 bg-[hsl(0,0%,98%)]">
             {children}
           </main>
         </div>
