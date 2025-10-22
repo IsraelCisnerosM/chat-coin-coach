@@ -34,38 +34,45 @@ client = OpenAI(
     default_headers=HEADERS
 )
 
-# Datos ficticios
+# Datos ficticios de usuario
 usuario = {
     "nombre": "Juan Pérez",
     "perfil_riesgo": "Moderado",
     "objetivo": "Crecimiento moderado en 12-24 meses",
 }
 
-portafolio = {
-    "valor_total_usd": 45823.67,
-    "rentabilidad_24h_pct": +12.34,
-    "distribucion": {
-        "bitcoin": 0.35,
-        "ethereum": 0.30,
-        "stablecoins": 0.20,
-        "other": 0.15
-    },
-    "detalle": {
-        "bitcoin": {"cantidad": 0.8, "precio_usd": 30000},
-        "ethereum": {"cantidad": 5, "precio_usd": 3200},
-        "stablecoins": {"cantidad": 9000, "precio_usd": 1},
-        "other": {"cantidad": 2000, "precio_usd": 1}
-    }
-}
-
+# Transacciones históricas se mantienen igual
 transacciones_historicas = [
     {"fecha": "2025-10-10", "activo": "bitcoin", "cantidad": 0.5, "tipo": "compra", "precio_usd": 25000},
     {"fecha": "2025-09-15", "activo": "ethereum", "cantidad": 5, "tipo": "compra", "precio_usd": 3000},
     {"fecha": "2025-08-01", "activo": "stablecoins", "cantidad": 9000, "tipo": "compra", "precio_usd": 1},
 ]
 
-# Contexto fijo
-contexto_fijo = f"""
+def cargar_portafolio():
+    try:
+        with open("public/portafolio-data.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        print(f"Error leyendo portafolio dinámico: {e}")
+        return None
+
+def generar_contexto_fijo(portafolio_data):
+    # Mapeamos distribución a objeto para detalle (simplificado)
+    distribucion_obj = {}
+    for item in portafolio_data.get("distribution", []):
+        key = item["name"].lower()
+        distribucion_obj[key] = item["value"] / 100  # porcentaje a decimal
+
+    # No tenemos detalle de cantidades y precios en el JSON dinámico, mantenemos vacío o predeterminado
+    detalle_predeterminado = {
+        "bitcoin": {"cantidad": 0.8, "precio_usd": 30000},
+        "ethereum": {"cantidad": 5, "precio_usd": 3200},
+        "solana": {"cantidad": 10, "precio_usd": 100},  # ejemplo
+        "other": {"cantidad": 2000, "precio_usd": 1}
+    }
+
+    contexto = f"""
 --- CONTEXTO FIJO DEL USUARIO ---
 Perfil del usuario:
 - Nombre: {usuario['nombre']}
@@ -73,15 +80,23 @@ Perfil del usuario:
 - Objetivo: {usuario['objetivo']}
 
 Portafolio Actual:
-- Valor total: ${portafolio['valor_total_usd']:.2f}
-- Rentabilidad 24h: {portafolio['rentabilidad_24h_pct']}%
-- Distribución: {json.dumps(portafolio['distribucion'], indent=2)}
-- Detalle de la composición (cantidades y precios): {json.dumps(portafolio['detalle'], indent=2)}
+- Valor total: ${portafolio_data.get('totalValue', 0):.2f}
+- Rentabilidad 24h: {portafolio_data.get('performance', 0)}%
+- Distribución: {json.dumps(distribucion_obj, indent=2)}
+- Detalle de la composición (cantidades y precios): {json.dumps(detalle_predeterminado, indent=2)}
 
 Histórico de Transacciones (Recientes):
 {json.dumps(transacciones_historicas[-3:], indent=2)}
 --- FIN CONTEXTO FIJO ---
 """
+    return contexto
+
+# Se genera el contexto fijo una vez cargando datos dinámicos
+portafolio_dinamico = cargar_portafolio()
+if portafolio_dinamico:
+    contexto_fijo = generar_contexto_fijo(portafolio_dinamico)
+else:
+        contexto_fijo = "No se pudo cargar la información del portafolio dinámico."
 
 system_prompt = contexto_fijo + """
 Eres un asesor financiero basado en inteligencia artificial especializado en inversiones Web3. Tu misión es ayudar al usuario a analizar su portafolio, ofrecer recomendaciones de inversión personalizadas, crear y gestionar tareas programadas (como compras recurrentes), y simplificar la experiencia financiera en blockchain. Respondes siempre en español. Actúas como asistente experto pero accesible, simplificando conceptos complejos y eliminando tecnicismos innecesarios. Te comportas como un asesor profesional con enfoque amigable, directo y centrado en resultados.
