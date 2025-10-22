@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.education-chat]
 verify_jwt = false
+
+[functions.home-chat]
+verify_jwt = false

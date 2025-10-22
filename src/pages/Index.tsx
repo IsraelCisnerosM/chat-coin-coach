@@ -4,10 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 const Index = () => {
   const [showBalance, setShowBalance] = useState(true);
   const [chatInput, setChatInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFirstMessage, setIsFirstMessage] = useState(true);
 
   const suggestions = [
     "¿En que invertir el día de hoy?",
@@ -24,7 +34,62 @@ const Index = () => {
   ];
 
   const handleSuggestionClick = (suggestion: string) => {
-    setChatInput(suggestion);
+    handleSendMessage(suggestion);
+  };
+
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || chatInput;
+    if (!textToSend.trim()) return;
+
+    setChatInput("");
+    setIsLoading(true);
+
+    // Agregar mensaje del usuario
+    const userMessage: Message = { role: 'user', content: textToSend };
+    setMessages(prev => [...prev, userMessage]);
+
+    try {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('home-chat', {
+        body: { 
+          message: textToSend,
+          history: messages,
+          isFirstMessage: isFirstMessage
+        }
+      });
+
+      if (functionError) {
+        console.error('Error calling function:', functionError);
+        toast({
+          title: "Error",
+          description: "No se pudo enviar el mensaje. Por favor intenta de nuevo.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: functionData.response || 'No recibí respuesta'
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsFirstMessage(false);
+
+      // Log para debug
+      if (functionData.botType) {
+        console.log('🤖 Bot usado:', functionData.botType);
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al procesar tu mensaje.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -78,9 +143,31 @@ const Index = () => {
           <span className="font-semibold text-[hsl(263,68%,20%)]">Bloky</span>
         </div>
 
-        {/* Mensaje de Bienvenida */}
-        <div className="rounded-2xl p-3 bg-white mb-3">
-          <p className="text-sm text-[hsl(263,68%,33%)]">Hola, ¿en qué puedo ayudarte hoy?</p>
+        {/* Mensajes del Chat */}
+        <div className="space-y-2 mb-3 max-h-60 overflow-y-auto">
+          {messages.length === 0 ? (
+            <div className="rounded-2xl p-3 bg-white">
+              <p className="text-sm text-[hsl(263,68%,33%)]">Hola, ¿en qué puedo ayudarte hoy?</p>
+            </div>
+          ) : (
+            messages.map((msg, idx) => (
+              <div 
+                key={idx} 
+                className={`rounded-2xl p-3 ${
+                  msg.role === 'user' 
+                    ? 'bg-[hsl(259,59%,46%)] text-white ml-8' 
+                    : 'bg-white text-[hsl(263,68%,33%)] mr-8'
+                }`}
+              >
+                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+              </div>
+            ))
+          )}
+          {isLoading && (
+            <div className="rounded-2xl p-3 bg-white mr-8">
+              <p className="text-sm text-[hsl(263,68%,33%)]">Pensando...</p>
+            </div>
+          )}
         </div>
 
         {/* Botones de Sugerencias */}
@@ -104,9 +191,16 @@ const Index = () => {
             placeholder="Pregunta a tu agente..."
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
             className="bg-white border-[hsl(291,64%,62%)]"
+            disabled={isLoading}
           />
-          <Button size="icon" className="shrink-0 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white">
+          <Button 
+            size="icon" 
+            className="shrink-0 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
+            onClick={() => handleSendMessage()}
+            disabled={isLoading}
+          >
             <Send className="h-4 w-4" />
           </Button>
         </div>
