@@ -342,7 +342,7 @@ export const TransactionChat = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSend()}
             placeholder="Ej: Envía 50 USDT a Juan..."
-            className="flex-1 bg-white border-[hsl(291,64%,62%)]"
+            className="flex-1 bg-white border-[hsl(291,64%,62%)] text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]"
             disabled={isTyping || isTranscribing}
           />
           <Button 

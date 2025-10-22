@@ -406,7 +406,7 @@ export const AIChat = () => {
             onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSend()}
             placeholder="Pregúntame sobre tus inversiones..."
             disabled={isTyping || isTranscribing}
-            className="flex-1"
+            className="flex-1 text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]"
           />
           <Button 
             onClick={() => handleSend()} 

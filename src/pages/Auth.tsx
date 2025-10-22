@@ -47,7 +47,7 @@ export default function Auth() {
                 placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 bg-white border-[hsl(291,64%,62%)]/30 focus:border-[hsl(259,59%,46%)]"
+                className="pl-10 bg-white border-[hsl(291,64%,62%)]/30 focus:border-[hsl(259,59%,46%)] text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]"
                 required
               />
             </div>
@@ -65,7 +65,7 @@ export default function Auth() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 bg-white border-[hsl(291,64%,62%)]/30 focus:border-[hsl(259,59%,46%)]"
+                className="pl-10 bg-white border-[hsl(291,64%,62%)]/30 focus:border-[hsl(259,59%,46%)] text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]"
                 required
               />
             </div>

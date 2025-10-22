@@ -171,7 +171,7 @@ export default function Educacion() {
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder="Pregúntame sobre tus finanzas..."
-              className="bg-white border-[hsl(291,64%,62%)]"
+              className="bg-white border-[hsl(291,64%,62%)] text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]"
               disabled={isLoading || isTranscribing}
             />
             <Button

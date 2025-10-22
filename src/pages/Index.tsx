@@ -225,7 +225,7 @@ const Index = () => {
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="bg-white border-[hsl(291,64%,62%)]"
+              className="bg-white border-[hsl(291,64%,62%)] text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]"
               disabled={isLoading || isTranscribing}
             />
             <Button 
