@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 import aiAvatar from "@/assets/ai-avatar.png";
 
 const IS_LOCAL = import.meta.env.DEV && import.meta.env.VITE_USE_LOCAL_PYTHON === 'true';
@@ -27,11 +28,12 @@ export const TransactionChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [approvedActionIds, setApprovedActionIds] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+
+  const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecording((text) => {
+    setInput(text);
+  });
 
   useEffect(() => {
     const loadInitialGreeting = async () => {
@@ -322,19 +324,32 @@ export const TransactionChat = () => {
 
       <div className="p-4 border-t border-[hsl(291,64%,62%)]/20">
         <div className="flex gap-2">
+          <Button 
+            size="icon" 
+            variant="ghost"
+            className="shrink-0"
+            onClick={isRecording ? stopRecording : startRecording}
+            disabled={isTyping || isTranscribing}
+          >
+            {isRecording ? (
+              <MicOff className="h-4 w-4 text-destructive animate-pulse" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSend()}
             placeholder="Ej: Envía 50 USDT a Juan..."
             className="flex-1 bg-white border-[hsl(291,64%,62%)]"
-            disabled={isTyping}
+            disabled={isTyping || isTranscribing}
           />
           <Button 
             onClick={() => handleSend()} 
             size="icon" 
             className="bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
-            disabled={!input.trim() || isTyping}
+            disabled={!input.trim() || isTyping || isTranscribing}
           >
             <Send className="h-4 w-4" />
           </Button>

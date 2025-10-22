@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 import aiAvatar from "@/assets/ai-avatar.png";
 
 // Detectar si estamos en modo local o nube
@@ -44,12 +45,13 @@ export const AIChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
   const [approvedTaskIds, setApprovedTaskIds] = useState<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+
+  const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecording((text) => {
+    setInput(text);
+  });
 
   useEffect(() => {
     // Cargar saludo inicial
@@ -167,102 +169,6 @@ export const AIChat = () => {
       });
     } finally {
       setIsTyping(false);
-    }
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await transcribeAudio(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      toast({
-        title: "Grabando",
-        description: "Habla ahora...",
-      });
-    } catch (error) {
-      console.error('Error al iniciar grabación:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo acceder al micrófono",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const transcribeAudio = async (audioBlob: Blob) => {
-    try {
-      toast({
-        title: "Transcribiendo",
-        description: "Procesando audio...",
-      });
-
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      
-      reader.onloadend = async () => {
-        const base64Audio = reader.result?.toString().split(',')[1];
-        
-        if (!base64Audio) {
-          throw new Error('No se pudo procesar el audio');
-        }
-
-        let response;
-
-        if (IS_LOCAL) {
-          // Usar servidor Python local
-          const res = await fetch(`${LOCAL_PYTHON_URL}/transcribe`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ audio: base64Audio })
-          });
-          response = await res.json();
-        } else {
-          // Usar Supabase
-          const { data, error } = await supabase.functions.invoke('voice-transcribe', {
-            body: { audio: base64Audio }
-          });
-          if (error) throw error;
-          response = data;
-        }
-
-        if (response?.text) {
-          setInput(response.text);
-          toast({
-            title: "Transcripción completa",
-            description: "Tu mensaje ha sido transcrito",
-          });
-        }
-      };
-    } catch (error) {
-      console.error('Error al transcribir:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo transcribir el audio",
-        variant: "destructive",
-      });
     }
   };
 
@@ -486,6 +392,7 @@ export const AIChat = () => {
             size="icon" 
             className="flex-shrink-0"
             onClick={isRecording ? stopRecording : startRecording}
+            disabled={isTyping || isTranscribing}
           >
             {isRecording ? (
               <MicOff className="h-4 w-4 text-destructive animate-pulse" />
@@ -498,14 +405,14 @@ export const AIChat = () => {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSend()}
             placeholder="Pregúntame sobre tus inversiones..."
+            disabled={isTyping || isTranscribing}
             className="flex-1"
-            disabled={isTyping}
           />
           <Button 
             onClick={() => handleSend()} 
             size="icon" 
             variant="ai"
-            disabled={!input.trim() || isTyping}
+            disabled={!input.trim() || isTyping || isTranscribing}
           >
             <Send className="h-4 w-4" />
           </Button>

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { MessageCircle, Coffee, CreditCard, Lightbulb, ArrowRight, Send, Loader2 } from "lucide-react";
+import { MessageCircle, Coffee, CreditCard, Lightbulb, ArrowRight, Send, Loader2, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
+import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 
 interface Message {
   role: "user" | "assistant";
@@ -16,6 +17,10 @@ export default function Educacion() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+
+  const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecording((text) => {
+    setInput(text);
+  });
 
   const suggestions = [
     "¿Cómo están mis gastos?",
@@ -148,18 +153,31 @@ export default function Educacion() {
 
           {/* Barra de Input */}
           <div className="flex gap-2">
+            <Button 
+              size="icon" 
+              variant="ghost"
+              className="shrink-0"
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isLoading || isTranscribing}
+            >
+              {isRecording ? (
+                <MicOff className="h-4 w-4 text-destructive animate-pulse" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </Button>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder="Pregúntame sobre tus finanzas..."
               className="bg-white border-[hsl(291,64%,62%)]"
-              disabled={isLoading}
+              disabled={isLoading || isTranscribing}
             />
             <Button
               size="icon"
               onClick={() => handleSendMessage()}
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || isTranscribing || !input.trim()}
               className="shrink-0 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
             >
               {isLoading ? (

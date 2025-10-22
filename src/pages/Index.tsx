@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Eye, EyeOff, Send, Download, Receipt, Coffee, ArrowDownLeft, ShoppingCart, Smartphone, ArrowUpRight, MessageCircle } from "lucide-react";
+import { Eye, EyeOff, Send, Download, Receipt, Coffee, ArrowDownLeft, ShoppingCart, Smartphone, ArrowUpRight, MessageCircle, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useVoiceRecording } from "@/hooks/useVoiceRecording";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -18,6 +19,10 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFirstMessage, setIsFirstMessage] = useState(true);
+
+  const { isRecording, isTranscribing, startRecording, stopRecording } = useVoiceRecording((text) => {
+    setChatInput(text);
+  });
 
   const suggestions = [
     "¿En que invertir el día de hoy?",
@@ -202,19 +207,32 @@ const Index = () => {
 
           {/* Input de Chat */}
           <div className="flex gap-2">
+            <Button 
+              size="icon" 
+              variant="ghost"
+              className="shrink-0"
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={isLoading || isTranscribing}
+            >
+              {isRecording ? (
+                <MicOff className="h-4 w-4 text-destructive animate-pulse" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </Button>
             <Input
               placeholder="Pregunta a tu agente..."
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               className="bg-white border-[hsl(291,64%,62%)]"
-              disabled={isLoading}
+              disabled={isLoading || isTranscribing}
             />
             <Button 
               size="icon" 
               className="shrink-0 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
               onClick={() => handleSendMessage()}
-              disabled={isLoading}
+              disabled={isLoading || isTranscribing}
             >
               <Send className="h-4 w-4" />
             </Button>
