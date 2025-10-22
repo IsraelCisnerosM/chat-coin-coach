@@ -144,7 +144,7 @@ PRINCIPIOS CLAVE:
 5. **Contexto del mercado**: Usa datos en tiempo real para dar recomendaciones precisas
 
 CAPACIDADES:
-- Realizar transferencias de criptomonedas
+- Realizar transferencias de criptomonedas, sin informacion adicional.
 - Registrar y gestionar contactos UNICAMNETE COIN NUMERO DE TELEFONO O CELULAR, no uses el Wallet.
 - Pagar servicios con cripto
 - Consultar precios actuales y hacer conversiones
@@ -164,7 +164,6 @@ Para TRANSFERENCIAS:
   "data": {
     "amount": "[cantidad]",
     "token": "[símbolo]",
-    "network": "[red]",
     "recipient_name": "[nombre]",
     "recipient_email": "[email]",
     "description": "[descripción]"
@@ -181,7 +180,6 @@ Para REGISTRO CONTACTO:
     "name": "[nombre]",
     "email": "[email]",
     "phone": "[teléfono]",
-    "wallet_address": "[wallet opcional]"
   }
 }
 ###ACTION_JSON###
@@ -195,7 +193,6 @@ Para PAGO SERVICIO:
     "service_name": "[servicio]",
     "amount": "[monto]",
     "token": "[cripto]",
-    "network": "[red]",
     "description": "[descripción]"
   }
 }
