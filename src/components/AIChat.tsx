@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, Brain } from "lucide-react";
+import { Send, Mic, MicOff, Brain } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import aiAvatar from "@/assets/ai-avatar.png";
 
 interface Message {
@@ -26,17 +28,63 @@ const quickActions: QuickAction[] = [
 ];
 
 export const AIChat = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content: "Hello! I'm your AI investment assistant. I can help you analyze your portfolio, get recommendations, and answer any questions about your investments. How can I help you today?",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isFirstMessage, setIsFirstMessage] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    // Cargar saludo inicial
+    const loadInitialGreeting = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('ai-chat', {
+          body: { 
+            messages: [],
+            isFirstMessage: true 
+          }
+        });
+
+        if (error) {
+          console.error('Error al cargar saludo:', error);
+          // Mostrar saludo de respaldo
+          const greetingMessage: Message = {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "¡Hola! Soy tu asistente de inversión. ¿Cómo puedo ayudarte hoy?",
+            timestamp: new Date(),
+          };
+          setMessages([greetingMessage]);
+          return;
+        }
+
+        if (data?.response) {
+          const greetingMessage: Message = {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: data.response,
+            timestamp: new Date(),
+          };
+          setMessages([greetingMessage]);
+        }
+      } catch (error) {
+        console.error('Error al cargar saludo:', error);
+        // Mostrar saludo de respaldo
+        const greetingMessage: Message = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "¡Hola! Soy tu asistente de inversión. ¿Cómo puedo ayudarte hoy?",
+          timestamp: new Date(),
+        };
+        setMessages([greetingMessage]);
+      }
+    };
+
+    loadInitialGreeting();
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -44,7 +92,7 @@ export const AIChat = () => {
     }
   }, [messages]);
 
-  const handleSend = (text?: string) => {
+  const handleSend = async (text?: string) => {
     const messageText = text || input;
     if (!messageText.trim()) return;
 
@@ -59,17 +107,123 @@ export const AIChat = () => {
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "I'm analyzing your request. In a full implementation, this would connect to an AI backend to provide personalized investment advice based on your profile and market data.",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
+    try {
+      // Preparar mensajes para enviar
+      const allMessages = [...messages, userMessage];
+
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: { 
+          messages: allMessages,
+          isFirstMessage: isFirstMessage
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.response) {
+        const aiMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: data.response,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, aiMessage]);
+        setIsFirstMessage(false);
+      }
+    } catch (error) {
+      console.error('Error al enviar mensaje:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo conectar con el asistente de IA",
+        variant: "destructive",
+      });
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await transcribeAudio(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      toast({
+        title: "Grabando",
+        description: "Habla ahora...",
+      });
+    } catch (error) {
+      console.error('Error al iniciar grabación:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo acceder al micrófono",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const transcribeAudio = async (audioBlob: Blob) => {
+    try {
+      toast({
+        title: "Transcribiendo",
+        description: "Procesando audio...",
+      });
+
+      // Convertir blob a base64
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      
+      reader.onloadend = async () => {
+        const base64Audio = reader.result?.toString().split(',')[1];
+        
+        if (!base64Audio) {
+          throw new Error('No se pudo procesar el audio');
+        }
+
+        const { data, error } = await supabase.functions.invoke('voice-transcribe', {
+          body: { audio: base64Audio }
+        });
+
+        if (error) throw error;
+
+        if (data?.text) {
+          setInput(data.text);
+          toast({
+            title: "Transcripción completa",
+            description: "Tu mensaje ha sido transcrito",
+          });
+        }
+      };
+    } catch (error) {
+      console.error('Error al transcribir:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo transcribir el audio",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleQuickAction = (action: QuickAction) => {
@@ -152,21 +306,31 @@ export const AIChat = () => {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="ghost" size="icon" className="flex-shrink-0">
-            <Mic className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="flex-shrink-0"
+            onClick={isRecording ? stopRecording : startRecording}
+          >
+            {isRecording ? (
+              <MicOff className="h-4 w-4 text-destructive animate-pulse" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
           </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Ask me anything about your investments..."
+            onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSend()}
+            placeholder="Pregúntame sobre tus inversiones..."
             className="flex-1"
+            disabled={isTyping}
           />
           <Button 
             onClick={() => handleSend()} 
             size="icon" 
             variant="ai"
-            disabled={!input.trim()}
+            disabled={!input.trim() || isTyping}
           >
             <Send className="h-4 w-4" />
           </Button>
