@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -6,158 +7,109 @@ const corsHeaders = {
 };
 
 const HICAP_API_KEY = Deno.env.get('HICAP_API_KEY');
-const HICAP_BASE_URL = Deno.env.get('HICAP_BASE_URL') || 'https://api.hicap.ai/v1';
+const HICAP_BASE_URL = 'https://api.hicap.ai/v2/openai';
+const MODELO_CHAT = 'gemini-2.5-flash';
 
-// ============ CARGA DE BASE DE CONOCIMIENTO RAG ============
-
-let baseConocimientoRAG: any = null;
-let contextoRAG = "";
-
-async function cargarBaseConocimiento() {
-  try {
-    const [eduRes, transRes] = await Promise.all([
-      fetch('https://jkywmvvgpvmqheeevzvn.supabase.co/storage/v1/object/public/bloky-educacion-financiera.json').catch(() => 
-        fetch(`${Deno.env.get('SUPABASE_URL')?.replace('/functions/v1', '')}/storage/v1/object/public/bloky-educacion-financiera.json`)
-      ),
-      fetch('https://jkywmvvgpvmqheeevzvn.supabase.co/storage/v1/object/public/conocimiento-de-transacciones.json').catch(() =>
-        fetch(`${Deno.env.get('SUPABASE_URL')?.replace('/functions/v1', '')}/storage/v1/object/public/conocimiento-de-transacciones.json`)
-      )
-    ]);
-
-    const educacion = await eduRes.json();
-    const transacciones = await transRes.json();
-
-    baseConocimientoRAG = {
-      bloky_educacion_financiera: educacion,
-      conocimiento_de_transacciones: transacciones
-    };
-
-    console.log('✅ Base de conocimiento RAG cargada');
-    return true;
-  } catch (error) {
-    console.error('⚠️ Error cargando base de conocimiento:', error);
-    return false;
-  }
-}
-
-function generarContextoRAG() {
-  if (!baseConocimientoRAG) {
-    return "⚠️ Base de conocimiento no disponible.";
-  }
-
-  let contexto = "\n--- BASE DE CONOCIMIENTO RAG ---\n";
-
-  // Educación Financiera
-  if (baseConocimientoRAG.bloky_educacion_financiera) {
-    const edu = baseConocimientoRAG.bloky_educacion_financiera;
-    contexto += `\n## MÓDULOS EDUCATIVOS:\n${JSON.stringify(edu.modulos_educativos || {}, null, 2)}\n`;
-    contexto += `\n## CONCEPTOS BÁSICOS:\n${JSON.stringify(edu.conceptos_basicos || {}, null, 2)}\n`;
-    contexto += `\n## GLOSARIO:\n${JSON.stringify(edu.glosario || {}, null, 2)}\n`;
-    contexto += `\n## PREGUNTAS FRECUENTES:\n${JSON.stringify(edu.preguntas_frecuentes || [], null, 2)}\n`;
-    contexto += `\n## CONSEJOS ACTIVOS:\n${JSON.stringify(edu.consejos_activos || [], null, 2)}\n`;
-  }
-
-  // Conocimiento de Transacciones
-  if (baseConocimientoRAG.conocimiento_de_transacciones) {
-    const trans = baseConocimientoRAG.conocimiento_de_transacciones;
-    contexto += `\n## CONTEXTO CRIPTO:\n${JSON.stringify(trans.contexto_cripto_especifico || {}, null, 2)}\n`;
-    contexto += `\n## PATRONES CONVERSACIONALES:\n${JSON.stringify(trans.patrones_conversacionales || {}, null, 2)}\n`;
-    contexto += `\n## PLANTILLAS DE ANÁLISIS:\n${JSON.stringify(trans.plantillas_analisis || {}, null, 2)}\n`;
-    contexto += `\n## ALERTAS PROACTIVAS:\n${JSON.stringify(trans.alertas_proactivas || {}, null, 2)}\n`;
-    contexto += `\n## SEGURIDAD:\n${JSON.stringify(trans.seguridad_transacciones || {}, null, 2)}\n`;
-    contexto += `\n## ESTRATEGIAS:\n${JSON.stringify(trans.estrategias_inversion || {}, null, 2)}\n`;
-  }
-
-  contexto += "\n--- FIN BASE DE CONOCIMIENTO RAG ---\n";
-  return contexto;
-}
-
-const EDUCATION_SYSTEM_PROMPT = `Eres Bloky Health, un asesor financiero amigable, empático y educativo. Tu especialidad son las finanzas personales y la gestión de activos digitales como Ethereum (ETH). Tu misión es ayudar al usuario a analizar sus transacciones, entender sus hábitos de gasto, y aprender conceptos financieros y de criptomonedas de forma sencilla.
-
---- REGLAS IMPORTANTES ---
-
-1. Eres un agente **RAG (Retrieval-Augmented Generation)**. Debes usar **EXCLUSIVAMENTE** la base de conocimiento RAG proporcionada para responder preguntas teóricas. **NO inventes información financiera**.
-
-2. Cuando el usuario pida un análisis personal (ej. '¿Cómo voy?', '¿En qué gasto más?'), conecta la información teórica del RAG con los datos en tiempo real del usuario.
-
-3. Puedes tomar la iniciativa y enviar mensajes proactivos solo si se cumple una condición de alertas_proactivas del RAG.
-
-4. **IMPORTANTE: Creación de Tareas**. Si el usuario pide crear una acción programada (DCA, transferencia, stake), responde con este JSON al final entre marcadores ###TASK_JSON###:
-
-###TASK_JSON###
-{
-  "id": "task-[timestamp]",
-  "title": "[Descripción]",
-  "type": "[buy|sell|transfer|stake]",
-  "amount": "[cantidad]",
-  "token": "[ETH|BTC|USDT]",
-  "recurrence": "[once|daily|weekly|monthly]",
-  "network": "[Ethereum|Polygon|etc]",
-  "gasEstimate": "[estimación]"
-}
-###TASK_JSON###
-
-5. **IMPORTANTE: Generación de Insights**. Cuando tu análisis resulte en un consejo concreto de consejos_activos, preséntalo también en JSON entre marcadores ###INSIGHT_JSON###:
-
-###INSIGHT_JSON###
-{
-  "id": "insight-[timestamp]",
-  "type": "[ahorro|meta|deuda|inversion]",
-  "title": "[Título del insight]",
-  "description": "[Descripción detallada]",
-  "data_summary": {
-    "categoria": "[categoría]",
-    "monto_gastado": "[monto]",
-    "ahorro_potencial": "[ahorro]"
+// Base de conocimiento RAG embebida
+const BASE_CONOCIMIENTO = {
+  conceptos_basicos: {
+    presupuesto: "Un presupuesto es un plan que te ayuda a administrar tu dinero. Te muestra cuánto ganas y cuánto gastas.",
+    ahorro: "Ahorrar es guardar una parte de tu dinero para el futuro. Te ayuda a prepararte para emergencias y alcanzar tus metas.",
+    inversion: "Invertir es poner tu dinero a trabajar para generar más dinero en el futuro.",
+    deuda: "Una deuda es dinero que debes a alguien. Es importante pagarla a tiempo para evitar intereses altos.",
   },
-  "rag_chunk_id": "[ID del chunk RAG usado]",
-  "suggested_action": "[Acción sugerida]"
+  criptomonedas: {
+    ethereum: "Ethereum (ETH) es una plataforma blockchain que permite crear contratos inteligentes y aplicaciones descentralizadas.",
+    bitcoin: "Bitcoin (BTC) es la primera criptomoneda. Se usa principalmente como reserva de valor.",
+    wallet: "Una wallet o billetera digital es donde guardas tus criptomonedas de forma segura.",
+    gas: "El gas es la tarifa que pagas por realizar transacciones en la red Ethereum.",
+  },
+  consejos: [
+    "Ahorra al menos el 10% de tus ingresos cada mes",
+    "Evita deudas con intereses altos",
+    "Diversifica tus inversiones",
+    "Mantén un fondo de emergencia",
+    "Revisa tus gastos regularmente"
+  ]
+};
+
+async function chatConIA(messages: any[]) {
+  try {
+    const response = await fetch(`${HICAP_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'api-key': HICAP_API_KEY!,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODELO_CHAT,
+        messages: messages,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error de API:', response.status, errorText);
+      return `[ERROR] Error al llamar a la API: ${response.status}`;
+    }
+
+    const data = await response.json();
+    if (data.choices && data.choices.length > 0) {
+      return data.choices[0].message.content;
+    }
+    return 'No se recibió respuesta del modelo.';
+  } catch (error) {
+    console.error('Error en chatConIA:', error);
+    return `[ERROR] ${error instanceof Error ? error.message : 'Error desconocido'}`;
+  }
 }
-###INSIGHT_JSON###
 
-6. Usa las plantillas_analisis del RAG para formatear análisis complejos.
+const EDUCATION_SYSTEM_PROMPT = `Eres Bloky Health, un asesor financiero amigable, empático y educativo. Tu especialidad son las finanzas personales y la gestión de activos digitales como Ethereum (ETH).
 
-7. Sigue los patrones_conversacionales del RAG para mantener el tono apropiado.
+BASE DE CONOCIMIENTO:
+${JSON.stringify(BASE_CONOCIMIENTO, null, 2)}
 
-8. Para preguntas sobre precios de criptomonedas, usa los datos de mercado en tiempo real proporcionados.
+REGLAS:
+1. Usa la base de conocimiento para responder preguntas sobre conceptos financieros y criptomonedas
+2. Sé amigable, claro y educativo
+3. Simplifica conceptos complejos
+4. Celebra los logros del usuario
+5. Nunca juzgues decisiones pasadas
 
-Respondes siempre en español. Actúas como tutor experto pero accesible, simplificando conceptos complejos. Nunca juzgas decisiones financieras pasadas y celebras los logros.
-`;
+CAPACIDADES:
+- Explicar conceptos financieros básicos
+- Enseñar sobre criptomonedas
+- Dar consejos de ahorro e inversión
+- Analizar situaciones financieras
 
-function clasificarIntencion(userInput: string): string {
-  const input = userInput.toLowerCase();
+Responde siempre en español de manera amigable y accesible.`;
+
+async function clasificarIntencion(userInput: string): Promise<string> {
+  const prompt = [
+    {
+      role: 'system',
+      content: `Clasifica la consulta en UNA categoría:
+A. EDUCACION → conceptos, definiciones, aprender
+B. ANALISIS → análisis de gastos/finanzas personales
+C. META → objetivos de ahorro
+D. MERCADO → precios de criptos
+E. TRANSACCION → compra/venta/transferencia
+
+Responde SOLO con UNA PALABRA: EDUCACION, ANALISIS, META, MERCADO o TRANSACCION.`
+    },
+    { role: 'user', content: userInput }
+  ];
+
+  const respuesta = await chatConIA(prompt);
+  let categoria = respuesta.trim().toUpperCase();
+
+  if (categoria.includes('EDUCACION')) return 'EDUCACION';
+  if (categoria.includes('ANALISIS')) return 'ANALISIS_PERSONAL';
+  if (categoria.includes('META')) return 'META';
+  if (categoria.includes('MERCADO')) return 'MERCADO';
+  if (categoria.includes('TRANSACCION')) return 'TRANSACCION';
   
-  // EDUCACION
-  if (input.includes('qué es') || input.includes('explica') || input.includes('cómo funciona') || 
-      input.includes('no entiendo') || input.includes('ayúdame a aprender') || input.includes('definición')) {
-    return 'EDUCACION';
-  }
-  
-  // ANALISIS_PERSONAL
-  if (input.includes('cómo voy') || input.includes('en qué gasto') || input.includes('analiza mis') || 
-      input.includes('mis gastos') || input.includes('mis finanzas') || input.includes('mi situación')) {
-    return 'ANALISIS_PERSONAL';
-  }
-  
-  // META
-  if (input.includes('meta') || input.includes('objetivo') || input.includes('quiero ahorrar') || 
-      input.includes('plan de ahorro')) {
-    return 'META';
-  }
-  
-  // MERCADO
-  if (input.includes('precio') || input.includes('mercado') || input.includes('cuánto vale') || 
-      input.includes('cotiza') || input.includes('tendencia')) {
-    return 'MERCADO';
-  }
-  
-  // TRANSACCION
-  if (input.includes('comprar') || input.includes('vender') || input.includes('transferir') || 
-      input.includes('enviar') || input.includes('stake') || input.includes('dca')) {
-    return 'TRANSACCION';
-  }
-  
-  return 'EDUCACION'; // Default
+  return 'EDUCACION';
 }
 
 async function obtenerPrecioActual(activoId = 'bitcoin', vsCurrency = 'usd') {
@@ -189,12 +141,6 @@ serve(async (req) => {
       throw new Error('HICAP_API_KEY no está configurada');
     }
 
-    // Cargar base de conocimiento si no está cargada
-    if (!baseConocimientoRAG) {
-      await cargarBaseConocimiento();
-      contextoRAG = generarContextoRAG();
-    }
-
     // Si es primer mensaje, enviar saludo
     if (isFirstMessage || !message) {
       return new Response(
@@ -211,14 +157,14 @@ serve(async (req) => {
     console.log('📚 Procesando consulta educativa:', message);
 
     // Clasificar intención
-    const tipoIntencion = clasificarIntencion(message);
+    const tipoIntencion = await clasificarIntencion(message);
     console.log('🎯 Intención detectada:', tipoIntencion);
 
     // Construir mensajes base
     const messages = [
       { 
         role: 'system', 
-        content: `${EDUCATION_SYSTEM_PROMPT}\n\n${contextoRAG}` 
+        content: EDUCATION_SYSTEM_PROMPT
       }
     ];
 
@@ -241,73 +187,27 @@ serve(async (req) => {
     }
 
     // Agregar historial
-    for (const msg of history) {
-      if (msg.role === 'user' || msg.role === 'assistant') {
-        messages.push({
-          role: msg.role,
-          content: msg.content
-        });
+    if (history && history.length > 0) {
+      for (const msg of history) {
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          messages.push({
+            role: msg.role,
+            content: msg.content
+          });
+        }
       }
     }
 
     // Agregar mensaje actual
     messages.push({ role: 'user', content: message });
 
-    console.log('🤖 Llamando a HICAP API con contexto RAG completo...');
+    console.log('🤖 Llamando a HICAP API...');
 
-    const response = await fetch(`${HICAP_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${HICAP_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gemini-2.5-flash',
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
-    });
+    // Obtener respuesta
+    const assistantMessage = await chatConIA(messages);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Error de HICAP API:', response.status, errorText);
-      throw new Error(`Error de API: ${response.status}`);
-    }
-
-    const data = await response.json();
-    let assistantMessage = data.choices[0].message.content;
-
-    // Detectar TASK_JSON
-    let taskJson = null;
-    if (assistantMessage.includes('###TASK_JSON###')) {
-      try {
-        const parts = assistantMessage.split('###TASK_JSON###');
-        if (parts.length >= 3) {
-          const jsonStr = parts[1].trim();
-          taskJson = JSON.parse(jsonStr);
-          assistantMessage = parts[0].trim() + (parts[2]?.trim() || '');
-          console.log('📋 Task JSON detectado:', taskJson);
-        }
-      } catch (e) {
-        console.error('Error parseando task JSON:', e);
-      }
-    }
-
-    // Detectar INSIGHT_JSON
-    let insightJson = null;
-    if (assistantMessage.includes('###INSIGHT_JSON###')) {
-      try {
-        const parts = assistantMessage.split('###INSIGHT_JSON###');
-        if (parts.length >= 3) {
-          const jsonStr = parts[1].trim();
-          insightJson = JSON.parse(jsonStr);
-          assistantMessage = parts[0].trim() + (parts[2]?.trim() || '');
-          console.log('💡 Insight JSON detectado:', insightJson);
-        }
-      } catch (e) {
-        console.error('Error parseando insight JSON:', e);
-      }
+    if (assistantMessage.startsWith('[ERROR]')) {
+      throw new Error(assistantMessage);
     }
 
     console.log('✅ Respuesta educativa generada');
@@ -315,8 +215,6 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         response: assistantMessage,
-        task: taskJson,
-        insight: insightJson,
         intencion: tipoIntencion
       }),
       { 
