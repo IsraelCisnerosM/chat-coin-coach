@@ -93,7 +93,7 @@ async function detectarIntencion(user_input: string) {
       content: `Eres un sistema de clasificación de intenciones para un asistente de transacciones de criptomonedas.
 Clasifica la consulta en UNA de estas categorías:
 A. TRANSFERENCIA → si quiere enviar dinero/criptos a alguien
-B. REGISTRO_CONTACTO → si quiere guardar un contacto nuevo con su numero telefono solamente.
+B. REGISTRO_CONTACTO → si quiere guardar un contacto nuevo con su numero telefono solamente, NO PIDAS WALLET.
 C. PAGO_SERVICIO → si quiere pagar un servicio (luz, agua, internet, etc)
 D. MERCADO → si pregunta por precios actuales, conversiones de moneda o valores de mercado
 E. CONSULTA → para cualquier otra pregunta o solicitud de información
@@ -145,22 +145,14 @@ PRINCIPIOS CLAVE:
 
 CAPACIDADES:
 - Realizar transferencias de criptomonedas
-- Registrar y gestionar contactos
+- Registrar y gestionar contactos UNICAMNETE COIN NUMERO DE TELEFONO O CELULAR, no uses el Wallet.
 - Pagar servicios con cripto
 - Consultar precios actuales y hacer conversiones
-- Recomendar redes óptimas según el caso de uso
-
-RECOMENDACIONES DE REDES:
-- **Polygon**: Óptima para montos pequeños (<$100 USD), fees muy bajos (~$0.01-0.50)
-- **BSC (Binance Smart Chain)**: Balance entre velocidad y costo, fees bajos (~$0.20-1.00)
-- **Ethereum Mainnet**: Para grandes montos (>$1000 USD) donde seguridad es prioritaria, fees altos (~$5-50)
-- **Arbitrum/Optimism**: Layer 2 de Ethereum, buenos fees (~$0.50-2.00), alta seguridad
-- **Solana**: Ultra rápida y barata (~$0.0001-0.01), ideal para microtransacciones
+- Se breve
 
 CONVERSIONES:
 - Siempre ofrece convertir pesos mexicanos (MXN) a la cripto equivalente
 - Usa los precios de mercado actuales
-- Explica las comisiones estimadas (gas fees)
 
 IMPORTANTE: Cuando detectes una intención clara de acción, genera un JSON al final entre marcadores ###ACTION_JSON###
 
