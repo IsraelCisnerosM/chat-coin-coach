@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.voice-transcribe]
 verify_jwt = false
+
+[functions.transaction-chat]
+verify_jwt = false

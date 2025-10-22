@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
+      movements: {
+        Row: {
+          amount: string
+          created_at: string
+          description: string | null
+          id: string
+          network: string
+          recipient_email: string | null
+          recipient_name: string | null
+          service_name: string | null
+          status: string
+          token: string
+          type: string
+        }
+        Insert: {
+          amount: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          network: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          service_name?: string | null
+          status?: string
+          token: string
+          type: string
+        }
+        Update: {
+          amount?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          network?: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          service_name?: string | null
+          status?: string
+          token?: string
+          type?: string
+        }
+        Relationships: []
+      }
       pending_tasks: {
         Row: {
           amount: string
@@ -44,6 +113,36 @@ export type Database = {
           title?: string
           token?: string
           type?: string
+        }
+        Relationships: []
+      }
+      saved_services: {
+        Row: {
+          account_number: string | null
+          amount: string | null
+          created_at: string
+          id: string
+          provider: string | null
+          service_name: string
+          service_type: string
+        }
+        Insert: {
+          account_number?: string | null
+          amount?: string | null
+          created_at?: string
+          id?: string
+          provider?: string | null
+          service_name: string
+          service_type: string
+        }
+        Update: {
+          account_number?: string | null
+          amount?: string | null
+          created_at?: string
+          id?: string
+          provider?: string | null
+          service_name?: string
+          service_type?: string
         }
         Relationships: []
       }

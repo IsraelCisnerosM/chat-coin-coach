@@ -15,7 +15,6 @@ import {
 
 const items = [
   { title: "Home", url: "/", icon: Home },
-  { title: "Inversiones", url: "/inversiones", icon: TrendingUp },
   { title: "Transacciones", url: "/transacciones", icon: Receipt },
 ];
 
