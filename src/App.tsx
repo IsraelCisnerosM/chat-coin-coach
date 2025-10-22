@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/Layout";
+import Auth from "./pages/Auth";
 import Index from "./pages/Index";
 import Inversiones from "./pages/Inversiones";
 import Transacciones from "./pages/Transacciones";
@@ -18,16 +19,19 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/inversiones" element={<Inversiones />} />
-            <Route path="/transacciones" element={<Transacciones />} />
-            <Route path="/educacion" element={<Educacion />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+        <Routes>
+          {/* Página de Auth sin Layout */}
+          <Route path="/" element={<Auth />} />
+          
+          {/* Páginas con Layout */}
+          <Route path="/home" element={<Layout><Index /></Layout>} />
+          <Route path="/inversiones" element={<Layout><Inversiones /></Layout>} />
+          <Route path="/transacciones" element={<Layout><Transacciones /></Layout>} />
+          <Route path="/educacion" element={<Layout><Educacion /></Layout>} />
+          
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
