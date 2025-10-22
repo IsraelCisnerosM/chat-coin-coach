@@ -32,8 +32,8 @@ export const MarketInsights = ({ insights }: MarketInsightsProps) => {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-accent" />
-          <h2 className="text-lg font-semibold text-foreground">AI Market Insights</h2>
-          <Badge variant="secondary" className="text-xs">Live</Badge>
+          <h2 className="text-lg font-semibold text-foreground">Insights del Mercado IA</h2>
+          <Badge variant="secondary" className="text-xs">En Vivo</Badge>
         </div>
 
         <div className="space-y-3">
@@ -55,7 +55,7 @@ export const MarketInsights = ({ insights }: MarketInsightsProps) => {
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-medium text-foreground text-sm">{insight.title}</h3>
                       <Badge variant="outline" className="text-xs">
-                        {insight.confidence}% confidence
+                        {insight.confidence}% confianza
                       </Badge>
                     </div>
                     

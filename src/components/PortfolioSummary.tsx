@@ -21,7 +21,7 @@ export const PortfolioSummary = () => {
   if (!portfolioData) {
     return (
       <Card className="p-6 shadow-[var(--shadow-card)] animate-fade-in">
-        <div className="text-center text-muted-foreground">Loading...</div>
+        <div className="text-center text-muted-foreground">Cargando...</div>
       </Card>
     );
   }
@@ -33,7 +33,7 @@ export const PortfolioSummary = () => {
     <Card className="p-6 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all animate-fade-in">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Portfolio Value</h2>
+          <h2 className="text-lg font-semibold text-foreground">Valor del Portafolio</h2>
           <DollarSign className="h-5 w-5 text-primary" />
         </div>
         
@@ -51,14 +51,14 @@ export const PortfolioSummary = () => {
             <span className={`text-sm font-medium ${isPositive ? 'text-secondary' : 'text-destructive'}`}>
               {isPositive ? '+' : ''}{performance.toFixed(2)}%
             </span>
-            <span className="text-sm text-muted-foreground">24h change</span>
+            <span className="text-sm text-muted-foreground">cambio 24h</span>
           </div>
         </div>
 
         <div className="pt-4 border-t border-border">
           <div className="flex items-center gap-2 mb-3">
             <PieChart className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">Asset Distribution</span>
+            <span className="text-sm font-medium text-foreground">Distribución de Activos</span>
           </div>
           
           <div className="space-y-2">

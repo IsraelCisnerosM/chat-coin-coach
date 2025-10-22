@@ -77,10 +77,10 @@ export const PendingTasks = () => {
 
       if (error) throw error;
 
-      toast.success("Transaction approved and sent to blockchain");
+      toast.success("Transacción aprobada y enviada a blockchain");
     } catch (error) {
       console.error('Error approving task:', error);
-      toast.error("Failed to approve transaction");
+      toast.error("Error al aprobar la transacción");
     }
   };
 
@@ -93,10 +93,10 @@ export const PendingTasks = () => {
 
       if (error) throw error;
 
-      toast.info("Task cancelled");
+      toast.info("Tarea cancelada");
     } catch (error) {
       console.error('Error cancelling task:', error);
-      toast.error("Failed to cancel task");
+      toast.error("Error al cancelar la tarea");
     }
   };
   const getTypeColor = (type: Task["type"]) => {
@@ -113,9 +113,9 @@ export const PendingTasks = () => {
       <Card className="p-6 shadow-[var(--shadow-card)] animate-fade-in">
         <div className="text-center space-y-2">
           <Clock className="h-8 w-8 text-muted-foreground mx-auto" />
-          <h3 className="font-semibold text-foreground">No Pending Tasks</h3>
+          <h3 className="font-semibold text-foreground">Sin Tareas Pendientes</h3>
           <p className="text-sm text-muted-foreground">
-            All your AI-generated transactions have been processed
+            Todas tus transacciones generadas por IA han sido procesadas
           </p>
         </div>
       </Card>
@@ -126,9 +126,9 @@ export const PendingTasks = () => {
     <Card className="p-6 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all animate-fade-in">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Pending Tasks</h2>
+          <h2 className="text-lg font-semibold text-foreground">Tareas Pendientes</h2>
           <Badge variant="secondary" className="text-xs">
-            {tasks.length} waiting
+            {tasks.length} esperando
           </Badge>
         </div>
 
@@ -148,9 +148,9 @@ export const PendingTasks = () => {
                   </div>
                   
                   <div className="space-y-1 text-sm text-muted-foreground">
-                    <div>Amount: <span className="font-medium text-foreground">{task.amount} {task.token}</span></div>
-                    <div>Network: <span className="font-medium text-foreground">{task.network}</span></div>
-                    <div>Est. Gas: <span className="font-medium text-foreground">{task.gasEstimate}</span></div>
+                    <div>Cantidad: <span className="font-medium text-foreground">{task.amount} {task.token}</span></div>
+                    <div>Red: <span className="font-medium text-foreground">{task.network}</span></div>
+                    <div>Gas Est.: <span className="font-medium text-foreground">{task.gasEstimate}</span></div>
                   </div>
                 </div>
               </div>
@@ -162,7 +162,7 @@ export const PendingTasks = () => {
                   className="flex-1"
                 >
                   <CheckCircle2 className="h-4 w-4 mr-1" />
-                  Approve Transaction
+                  Aprobar Transacción
                 </Button>
                 <Button
                   onClick={() => handleCancel(task.id)}
@@ -171,12 +171,12 @@ export const PendingTasks = () => {
                   className="flex-1"
                 >
                   <XCircle className="h-4 w-4 mr-1" />
-                  Cancel
+                  Cancelar
                 </Button>
               </div>
 
               <div className="text-xs text-muted-foreground pt-2 border-t border-border flex items-center gap-1">
-                <span>This transaction will be signed with your private key and executed on {task.network}</span>
+                <span>Esta transacción será firmada con tu clave privada y ejecutada en {task.network}</span>
                 <ExternalLink className="h-3 w-3" />
               </div>
             </div>

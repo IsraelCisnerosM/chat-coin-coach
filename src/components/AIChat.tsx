@@ -35,13 +35,18 @@ interface QuickAction {
 }
 
 const quickActions: QuickAction[] = [
-  { label: "Analyze my portfolio", prompt: "How is my portfolio performing today?" },
-  { label: "Investment recommendations", prompt: "What are your investment recommendations for me?" },
-  { label: "Create savings plan", prompt: "Help me create a monthly savings plan" },
-  { label: "Market insights", prompt: "What are the current market trends?" },
+  { label: "Analizar mi portafolio", prompt: "¿Cómo está rindiendo mi portafolio hoy?" },
+  { label: "Recomendaciones de inversión", prompt: "¿Cuáles son tus recomendaciones de inversión para mí?" },
+  { label: "Crear plan de ahorro", prompt: "Ayúdame a crear un plan de ahorro mensual" },
+  { label: "Insights del mercado", prompt: "¿Cuáles son las tendencias actuales del mercado?" },
 ];
 
-export const AIChat = () => {
+interface AIChatProps {
+  assistantName?: string;
+  inputClassName?: string;
+}
+
+export const AIChat = ({ assistantName = "Asistente de Inversión IA", inputClassName = "text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]" }: AIChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -274,10 +279,10 @@ export const AIChat = () => {
           </div>
           <div>
             <h3 className="font-semibold text-foreground flex items-center gap-2">
-              AI Investment Assistant
+              {assistantName}
               <Brain className="h-4 w-4 text-accent" />
             </h3>
-            <p className="text-xs text-muted-foreground">Always here to help</p>
+            <p className="text-xs text-muted-foreground">Siempre aquí para ayudar</p>
           </div>
         </div>
       </div>
@@ -406,7 +411,7 @@ export const AIChat = () => {
             onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSend()}
             placeholder="Pregúntame sobre tus inversiones..."
             disabled={isTyping || isTranscribing}
-            className="flex-1 text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]"
+            className={`flex-1 ${inputClassName}`}
           />
           <Button 
             onClick={() => handleSend()} 

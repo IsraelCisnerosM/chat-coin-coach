@@ -12,16 +12,16 @@ const Index = () => {
   const marketInsights = [
     {
       id: "1",
-      title: "High volatility detected in Bitcoin",
-      description: "AI analysis shows increased market volatility. Consider adjusting your risk exposure.",
+      title: "Alta volatilidad detectada en Bitcoin",
+      description: "El análisis de IA muestra mayor volatilidad del mercado. Considera ajustar tu exposición al riesgo.",
       sentiment: "neutral" as const,
       confidence: 87,
       timestamp: new Date(),
     },
     {
       id: "2",
-      title: "Ethereum upgrade approaching",
-      description: "Market sentiment is bullish ahead of the upcoming network upgrade. Historical data suggests potential upside.",
+      title: "Actualización de Ethereum aproximándose",
+      description: "El sentimiento del mercado es alcista antes de la próxima actualización de red. Los datos históricos sugieren potencial al alza.",
       sentiment: "bullish" as const,
       confidence: 92,
       timestamp: new Date(),
@@ -30,8 +30,8 @@ const Index = () => {
 
   const handleEditProfile = () => {
     toast({
-      title: "Opening AI Profile Editor",
-      description: "Chat with the AI to adjust your investment profile.",
+      title: "Abriendo Editor de Perfil IA",
+      description: "Chatea con la IA para ajustar tu perfil de inversión.",
     });
   };
 
@@ -47,7 +47,10 @@ const Index = () => {
 
         {/* Center Column - AI Chat */}
         <div className="lg:col-span-2 space-y-6">
-          <AIChat />
+          <AIChat 
+            assistantName="Blocky Autopilot" 
+            inputClassName="text-white placeholder:text-white/70"
+          />
           <PendingTasks />
         </div>
       </div>
