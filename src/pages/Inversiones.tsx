@@ -36,7 +36,7 @@ const Index = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 min-h-screen bg-[hsl(240,12%,6%)]">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Portfolio & Profile */}
         <div className="space-y-6">
