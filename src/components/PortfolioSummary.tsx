@@ -1,0 +1,63 @@
+import { TrendingUp, TrendingDown, DollarSign, PieChart } from "lucide-react";
+import { Card } from "@/components/ui/card";
+
+interface PortfolioSummaryProps {
+  totalValue: number;
+  performance: number;
+  distribution: { name: string; value: number; color: string }[];
+}
+
+export const PortfolioSummary = ({ totalValue, performance, distribution }: PortfolioSummaryProps) => {
+  const isPositive = performance >= 0;
+
+  return (
+    <Card className="p-6 shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-elevated)] transition-all animate-fade-in">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">Portfolio Value</h2>
+          <DollarSign className="h-5 w-5 text-primary" />
+        </div>
+        
+        <div className="space-y-2">
+          <div className="text-3xl font-bold text-foreground">
+            ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {isPositive ? (
+              <TrendingUp className="h-4 w-4 text-secondary" />
+            ) : (
+              <TrendingDown className="h-4 w-4 text-destructive" />
+            )}
+            <span className={`text-sm font-medium ${isPositive ? 'text-secondary' : 'text-destructive'}`}>
+              {isPositive ? '+' : ''}{performance.toFixed(2)}%
+            </span>
+            <span className="text-sm text-muted-foreground">24h change</span>
+          </div>
+        </div>
+
+        <div className="pt-4 border-t border-border">
+          <div className="flex items-center gap-2 mb-3">
+            <PieChart className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">Asset Distribution</span>
+          </div>
+          
+          <div className="space-y-2">
+            {distribution.map((asset, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: asset.color }}
+                  />
+                  <span className="text-sm text-foreground">{asset.name}</span>
+                </div>
+                <span className="text-sm font-medium text-foreground">{asset.value}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+};
