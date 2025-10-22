@@ -28,9 +28,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-safe">
+    <div className="min-h-screen bg-[hsl(0,0%,98%)] pb-safe">
       {/* Balance Card */}
-      <div className="mx-4 mt-4 p-6 rounded-3xl bg-gradient-card shadow-glow relative overflow-hidden">
+      <div className="mx-4 mt-4 p-6 rounded-3xl relative overflow-hidden shadow-md" style={{ background: 'linear-gradient(180deg, hsl(259, 59%, 46%), hsl(263, 68%, 33%))' }}>
         {/* Overlay de brillo */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
         
@@ -38,11 +38,11 @@ const Index = () => {
         <div className="relative z-10">
           {/* Header Row */}
           <div className="flex justify-between items-center mb-4">
-            <span className="text-sm font-medium text-primary-foreground/80">Saldo Disponible</span>
+            <span className="text-sm font-medium text-white/80">Saldo Disponible</span>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/10"
+              className="h-8 w-8 text-white hover:bg-white/10"
               onClick={() => setShowBalance(!showBalance)}
             >
               {showBalance ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
@@ -51,17 +51,17 @@ const Index = () => {
 
           {/* Sección de Saldo */}
           <div className="mb-4">
-            <div className="text-4xl font-bold text-primary-foreground">
+            <div className="text-4xl font-bold text-white">
               {showBalance ? "2500000.00 ETH" : "••••••••"}
             </div>
-            <div className="text-sm text-primary-foreground/60 mt-1">Ethereum</div>
+            <div className="text-sm text-white/60 mt-1">Ethereum</div>
           </div>
 
           {/* Botón de Acción */}
           <Button
             size="sm"
             variant="outline"
-            className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20"
+            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
           >
             Ver Detalle
           </Button>
@@ -69,18 +69,18 @@ const Index = () => {
       </div>
 
       {/* AI Chat (Bloky) */}
-      <div className="mx-4 mt-6 p-4 rounded-3xl bg-muted shadow-md">
+      <div className="mx-4 mt-6 p-4 rounded-3xl bg-[hsl(291,47%,88%)] shadow-md">
         {/* Avatar y Nombre */}
         <div className="flex items-center gap-3 mb-3">
-          <Avatar className="h-10 w-10 bg-accent rounded-full p-2">
-            <MessageCircle className="h-5 w-5 text-accent-foreground" />
+          <Avatar className="h-10 w-10 rounded-full p-2" style={{ backgroundColor: 'hsl(259, 59%, 46%)' }}>
+            <MessageCircle className="h-5 w-5 text-white" />
           </Avatar>
-          <span className="font-semibold text-foreground">Bloky</span>
+          <span className="font-semibold text-[hsl(263,68%,20%)]">Bloky</span>
         </div>
 
         {/* Mensaje de Bienvenida */}
-        <div className="rounded-2xl p-3 bg-card mb-3">
-          <p className="text-sm text-muted-foreground">Hola, ¿en qué puedo ayudarte hoy?</p>
+        <div className="rounded-2xl p-3 bg-white mb-3">
+          <p className="text-sm text-[hsl(263,68%,33%)]">Hola, ¿en qué puedo ayudarte hoy?</p>
         </div>
 
         {/* Botones de Sugerencias */}
@@ -90,7 +90,7 @@ const Index = () => {
               key={index}
               size="sm"
               variant="outline"
-              className="bg-card text-xs"
+              className="bg-white text-xs rounded-full border-[hsl(291,64%,62%)] text-[hsl(259,59%,46%)] hover:bg-[hsl(291,47%,88%)]"
               onClick={() => handleSuggestionClick(suggestion)}
             >
               {suggestion}
@@ -104,81 +104,85 @@ const Index = () => {
             placeholder="Pregunta a tu agente..."
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
-            className="bg-card border-muted-foreground/20"
+            className="bg-white border-[hsl(291,64%,62%)]"
           />
-          <Button size="icon" variant="gradient" className="shrink-0">
+          <Button size="icon" className="shrink-0 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white">
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Transactions List */}
-      <div className="px-4 mt-6">
-        {/* Header de Sección */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-lg text-foreground">Transacciones Recientes</h2>
-          <Button variant="link" size="sm" className="text-accent">
-            Ver Todas
-          </Button>
-        </div>
-
-        {/* Tarjeta de Transacciones */}
-        <Card className="rounded-3xl shadow-md overflow-hidden">
-          {transactions.map((transaction, index) => {
-            const Icon = transaction.icon;
-            return (
-              <div key={index}>
-                <div className="flex items-center gap-3 p-4">
-                  {/* Ícono circular */}
-                  <div className="rounded-full bg-muted p-2">
-                    <Icon className="h-5 w-5 text-accent" />
-                  </div>
-
-                  {/* Información */}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-foreground truncate">
-                      {transaction.description}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {transaction.date}
-                    </div>
-                  </div>
-
-                  {/* Monto */}
-                  <div className="font-bold text-sm text-foreground">
-                    ${Math.abs(transaction.amount).toFixed(2)}
-                  </div>
-                </div>
-                {index < transactions.length - 1 && (
-                  <div className="border-b border-muted mx-4" />
-                )}
-              </div>
-            );
-          })}
-        </Card>
-      </div>
-
       {/* Action Buttons */}
-      <div className="px-4 mt-6 pb-24">
+      <div className="px-4 mt-6">
         <div className="grid grid-cols-3 gap-3">
-          <Button variant="secondary" className="flex-col h-auto py-4 gap-2">
+          <Button 
+            className="flex-col h-auto py-4 gap-2 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
+          >
             <Send className="h-6 w-6" />
             <span className="text-xs font-medium">Enviar</span>
           </Button>
 
-          <Button variant="action" className="flex-col h-auto py-4 gap-2">
+          <Button 
+            className="flex-col h-auto py-4 gap-2 bg-[hsl(291,64%,62%)] hover:bg-[hsl(259,59%,46%)] text-white"
+          >
             <Receipt className="h-6 w-6" />
             <span className="text-xs font-medium">Servicios</span>
           </Button>
 
           <Button
             variant="outline"
-            className="flex-col h-auto py-4 gap-2 bg-pink-pale border-accent/20"
+            className="flex-col h-auto py-4 gap-2 bg-[hsl(340,82%,92%)] border-[hsl(291,64%,62%)]/20 text-[hsl(263,68%,20%)] hover:bg-[hsl(340,82%,87%)]"
           >
             <Download className="h-6 w-6" />
             <span className="text-xs font-medium">Recibir</span>
           </Button>
         </div>
+      </div>
+
+      {/* Transactions List */}
+      <div className="px-4 mt-6 pb-24">
+        {/* Header de Sección */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-lg text-[hsl(263,68%,20%)]">Transacciones Recientes</h2>
+          <Button variant="link" size="sm" className="text-[hsl(259,59%,46%)] hover:underline">
+            Ver Todas
+          </Button>
+        </div>
+
+        {/* Tarjeta de Transacciones */}
+        <Card className="rounded-3xl shadow-md overflow-hidden bg-white">
+          {transactions.map((transaction, index) => {
+            const Icon = transaction.icon;
+            return (
+              <div key={index}>
+                <div className="flex items-center gap-3 p-4">
+                  {/* Ícono circular */}
+                  <div className="rounded-full bg-[hsl(291,47%,88%)] p-2">
+                    <Icon className="h-5 w-5 text-[hsl(259,59%,46%)]" />
+                  </div>
+
+                  {/* Información */}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm text-[hsl(263,68%,20%)] truncate">
+                      {transaction.description}
+                    </div>
+                    <div className="text-xs text-[hsl(263,68%,33%)]">
+                      {transaction.date}
+                    </div>
+                  </div>
+
+                  {/* Monto */}
+                  <div className="font-bold text-sm text-[hsl(263,68%,20%)]">
+                    ${Math.abs(transaction.amount).toFixed(2)}
+                  </div>
+                </div>
+                {index < transactions.length - 1 && (
+                  <div className="border-b border-[hsl(291,47%,88%)] mx-4" />
+                )}
+              </div>
+            );
+          })}
+        </Card>
       </div>
     </div>
   );

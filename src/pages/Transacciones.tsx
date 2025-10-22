@@ -68,12 +68,12 @@ export default function Transacciones() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6 bg-[hsl(0,0%,98%)] min-h-screen">
       {/* Encabezado con Saldo */}
-      <Card className="p-6 bg-gradient-to-r from-primary/10 to-accent/10">
+      <Card className="p-6 border-0 shadow-md" style={{ background: 'linear-gradient(180deg, hsl(259, 59%, 46%), hsl(263, 68%, 33%))' }}>
         <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">Saldo Total</p>
-          <h1 className="text-4xl font-bold text-foreground">
+          <p className="text-sm text-white/80 mb-2">Saldo Total</p>
+          <h1 className="text-4xl font-bold text-white">
             ${balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h1>
         </div>
@@ -84,16 +84,15 @@ export default function Transacciones() {
         <Button
           variant="outline"
           size="lg"
-          className="h-24 flex flex-col items-center justify-center gap-2"
+          className="h-24 flex flex-col items-center justify-center gap-2 bg-white border-[hsl(291,64%,62%)] text-[hsl(263,68%,20%)] hover:bg-[hsl(291,47%,88%)]"
           onClick={() => handleQuickAction('transfer')}
         >
           <Send className="h-6 w-6" />
           <span>Transferencia Rápida</span>
         </Button>
         <Button
-          variant="outline"
           size="lg"
-          className="h-24 flex flex-col items-center justify-center gap-2"
+          className="h-24 flex flex-col items-center justify-center gap-2 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
           onClick={() => handleQuickAction('payment')}
         >
           <DollarSign className="h-6 w-6" />
@@ -102,7 +101,7 @@ export default function Transacciones() {
         <Button
           variant="outline"
           size="lg"
-          className="h-24 flex flex-col items-center justify-center gap-2"
+          className="h-24 flex flex-col items-center justify-center gap-2 bg-[hsl(340,82%,92%)] border-[hsl(291,64%,62%)]/20 text-[hsl(263,68%,20%)] hover:bg-[hsl(340,82%,87%)]"
           onClick={() => handleQuickAction('history')}
         >
           <History className="h-6 w-6" />
@@ -114,52 +113,52 @@ export default function Transacciones() {
       <TransactionChat />
 
       {/* Historial de Movimientos */}
-      <Card className="p-6">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <Receipt className="h-6 w-6" />
+      <Card className="p-6 bg-white border-0 shadow-md">
+        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 text-[hsl(263,68%,20%)]">
+          <Receipt className="h-6 w-6 text-[hsl(259,59%,46%)]" />
           Historial de Movimientos
         </h2>
         <div className="space-y-4">
           {movements.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
+            <p className="text-[hsl(263,68%,33%)] text-center py-8">
               No hay movimientos registrados
             </p>
           ) : (
             movements.map((movement) => (
               <div
                 key={movement.id}
-                className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between p-4 border border-[hsl(291,47%,88%)] rounded-lg hover:bg-[hsl(291,47%,88%)]/50 transition-colors"
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    movement.type === 'transfer' ? 'bg-blue-500/20' :
-                    movement.type === 'service_payment' ? 'bg-purple-500/20' :
+                    movement.type === 'transfer' ? 'bg-[hsl(259,59%,46%)]/20' :
+                    movement.type === 'service_payment' ? 'bg-[hsl(291,64%,62%)]/20' :
                     'bg-green-500/20'
                   }`}>
                     {movement.type === 'transfer' ? '↗️' : 
                      movement.type === 'service_payment' ? '💳' : '↙️'}
                   </div>
                   <div>
-                    <p className="font-semibold">
+                    <p className="font-semibold text-[hsl(263,68%,20%)]">
                       {movement.type === 'transfer' 
                         ? `Transferencia a ${movement.recipient_name || movement.recipient_email}`
                         : movement.type === 'service_payment'
                         ? `Pago de ${movement.service_name}`
                         : 'Recepción'}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-[hsl(263,68%,33%)]">
                       {new Date(movement.created_at).toLocaleString('es-ES')}
                     </p>
                     {movement.description && (
-                      <p className="text-sm text-muted-foreground">{movement.description}</p>
+                      <p className="text-sm text-[hsl(263,68%,33%)]">{movement.description}</p>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-lg">
+                  <p className="font-bold text-lg text-[hsl(263,68%,20%)]">
                     {movement.amount} {movement.token}
                   </p>
-                  <p className="text-sm text-muted-foreground">{movement.network}</p>
+                  <p className="text-sm text-[hsl(263,68%,33%)]">{movement.network}</p>
                   <span className={`inline-block px-2 py-1 rounded text-xs ${
                     movement.status === 'completed' ? 'bg-green-500/20 text-green-500' :
                     movement.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' :
