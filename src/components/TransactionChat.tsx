@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, Check, X } from "lucide-react";
+import { Send, Mic, MicOff, Check, X, MessageCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -222,18 +222,20 @@ export const TransactionChat = () => {
   };
 
   return (
-    <Card className="flex flex-col h-[600px] shadow-lg">
-      <div className="p-4 border-b border-border bg-gradient-to-r from-primary/10 to-accent/10">
+    <Card className="flex flex-col h-[600px] shadow-lg bg-[hsl(291,47%,88%)] border-0">
+      <div className="p-4 border-b border-[hsl(291,64%,62%)]/20">
         <div className="flex items-center gap-3">
-          <img src={aiAvatar} alt="AI Assistant" className="w-10 h-10 rounded-full" />
+          <div className="rounded-full p-2 bg-[hsl(259,59%,46%)]">
+            <MessageCircle className="h-6 w-6 text-white" />
+          </div>
           <div>
-            <h3 className="font-semibold text-foreground">Asistente de Transacciones</h3>
-            <p className="text-xs text-muted-foreground">Transferencias y pagos simplificados</p>
+            <h3 className="font-semibold text-[hsl(263,68%,20%)]">Asistente de Transacciones</h3>
+            <p className="text-xs text-[hsl(263,68%,33%)]">Transferencias y pagos simplificados</p>
           </div>
         </div>
       </div>
 
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 p-4 bg-white rounded-lg" ref={scrollRef}>
         <div className="space-y-4">
           {messages.map((message) => (
             <div
@@ -243,14 +245,16 @@ export const TransactionChat = () => {
               }`}
             >
               {message.role === "assistant" && (
-                <img src={aiAvatar} alt="AI" className="w-8 h-8 rounded-full flex-shrink-0" />
+                <div className="w-8 h-8 rounded-full bg-[hsl(259,59%,46%)] flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="h-4 w-4 text-white" />
+                </div>
               )}
               <div className="max-w-[80%] space-y-2">
                 <div
                   className={`rounded-2xl px-4 py-3 ${
                     message.role === "assistant"
-                      ? "bg-muted text-foreground"
-                      : "bg-primary text-primary-foreground"
+                      ? "bg-gray-100 text-gray-900"
+                      : "bg-[hsl(259,59%,46%)] text-white"
                   }`}
                 >
                   <p className="text-sm">{message.content}</p>
@@ -301,12 +305,14 @@ export const TransactionChat = () => {
           
           {isTyping && (
             <div className="flex gap-3 justify-start">
-              <img src={aiAvatar} alt="AI" className="w-8 h-8 rounded-full flex-shrink-0" />
-              <div className="bg-muted rounded-2xl px-4 py-3">
+              <div className="w-8 h-8 rounded-full bg-[hsl(259,59%,46%)] flex items-center justify-center flex-shrink-0">
+                <MessageCircle className="h-4 w-4 text-white" />
+              </div>
+              <div className="bg-gray-100 rounded-2xl px-4 py-3">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <div className="w-2 h-2 bg-[hsl(259,59%,46%)] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <div className="w-2 h-2 bg-[hsl(259,59%,46%)] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <div className="w-2 h-2 bg-[hsl(259,59%,46%)] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             </div>
@@ -314,20 +320,20 @@ export const TransactionChat = () => {
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-[hsl(291,64%,62%)]/20">
         <div className="flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !isTyping && handleSend()}
             placeholder="Ej: Envía 50 USDT a Juan..."
-            className="flex-1"
+            className="flex-1 bg-white border-[hsl(291,64%,62%)]"
             disabled={isTyping}
           />
           <Button 
             onClick={() => handleSend()} 
             size="icon" 
-            variant="ai"
+            className="bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
             disabled={!input.trim() || isTyping}
           >
             <Send className="h-4 w-4" />

@@ -72,9 +72,9 @@ const Index = () => {
       <div className="mx-4 mt-6 p-4 rounded-3xl bg-[hsl(291,47%,88%)] shadow-md">
         {/* Avatar y Nombre */}
         <div className="flex items-center gap-3 mb-3">
-          <Avatar className="h-10 w-10 rounded-full p-2" style={{ backgroundColor: 'hsl(259, 59%, 46%)' }}>
+          <div className="h-10 w-10 rounded-full p-2 bg-[hsl(259,59%,46%)] flex items-center justify-center">
             <MessageCircle className="h-5 w-5 text-white" />
-          </Avatar>
+          </div>
           <span className="font-semibold text-[hsl(263,68%,20%)]">Bloky</span>
         </div>
 
