@@ -1,13 +1,32 @@
 import { TrendingUp, TrendingDown, DollarSign, PieChart } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 
-interface PortfolioSummaryProps {
+interface PortfolioData {
   totalValue: number;
   performance: number;
   distribution: { name: string; value: number; color: string }[];
 }
 
-export const PortfolioSummary = ({ totalValue, performance, distribution }: PortfolioSummaryProps) => {
+export const PortfolioSummary = () => {
+  const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
+
+  useEffect(() => {
+    fetch('/portfolio-data.json')
+      .then(res => res.json())
+      .then(data => setPortfolioData(data))
+      .catch(err => console.error('Error loading portfolio data:', err));
+  }, []);
+
+  if (!portfolioData) {
+    return (
+      <Card className="p-6 shadow-[var(--shadow-card)] animate-fade-in">
+        <div className="text-center text-muted-foreground">Loading...</div>
+      </Card>
+    );
+  }
+
+  const { totalValue, performance, distribution } = portfolioData;
   const isPositive = performance >= 0;
 
   return (

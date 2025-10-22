@@ -2,6 +2,8 @@ import { CheckCircle2, XCircle, Clock, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Task {
   id: string;
@@ -11,16 +13,34 @@ interface Task {
   token: string;
   network: string;
   gasEstimate: string;
-  createdAt: Date;
 }
 
-interface PendingTasksProps {
-  tasks: Task[];
-  onApprove: (taskId: string) => void;
-  onCancel: (taskId: string) => void;
-}
+export const PendingTasks = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
 
-export const PendingTasks = ({ tasks, onApprove, onCancel }: PendingTasksProps) => {
+  useEffect(() => {
+    const loadTasks = () => {
+      fetch('/pending-tasks.json')
+        .then(res => res.json())
+        .then(data => setTasks(data.tasks || []))
+        .catch(err => console.error('Error loading tasks:', err));
+    };
+
+    loadTasks();
+    // Reload every 2 seconds to detect changes
+    const interval = setInterval(loadTasks, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleApprove = (taskId: string) => {
+    toast.success("Transaction approved and sent to blockchain");
+    setTasks(tasks.filter(t => t.id !== taskId));
+  };
+
+  const handleCancel = (taskId: string) => {
+    toast.info("Task cancelled");
+    setTasks(tasks.filter(t => t.id !== taskId));
+  };
   const getTypeColor = (type: Task["type"]) => {
     switch (type) {
       case "buy": return "bg-secondary/10 text-secondary";
@@ -79,7 +99,7 @@ export const PendingTasks = ({ tasks, onApprove, onCancel }: PendingTasksProps) 
 
               <div className="flex items-center gap-2 pt-2 border-t border-border">
                 <Button
-                  onClick={() => onApprove(task.id)}
+                  onClick={() => handleApprove(task.id)}
                   size="sm"
                   className="flex-1"
                 >
@@ -87,7 +107,7 @@ export const PendingTasks = ({ tasks, onApprove, onCancel }: PendingTasksProps) 
                   Approve Transaction
                 </Button>
                 <Button
-                  onClick={() => onCancel(task.id)}
+                  onClick={() => handleCancel(task.id)}
                   size="sm"
                   variant="outline"
                   className="flex-1"

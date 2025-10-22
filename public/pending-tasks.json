@@ -1,0 +1,22 @@
+{
+  "tasks": [
+    {
+      "id": "task-1",
+      "title": "Compra recomendada por IA",
+      "type": "buy",
+      "amount": "0.1",
+      "token": "ETH",
+      "network": "Ethereum",
+      "gasEstimate": "$8.50"
+    },
+    {
+      "id": "task-2",
+      "title": "Transferir recompensas de staking",
+      "type": "transfer",
+      "amount": "50",
+      "token": "USDC",
+      "network": "Polygon",
+      "gasEstimate": "$0.15"
+    }
+  ]
+}

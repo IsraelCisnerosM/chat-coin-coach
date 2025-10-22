@@ -1,0 +1,26 @@
+{
+  "totalValue": 45678.92,
+  "performance": 12.45,
+  "distribution": [
+    {
+      "name": "Bitcoin",
+      "value": 45,
+      "color": "#F7931A"
+    },
+    {
+      "name": "Ethereum",
+      "value": 30,
+      "color": "#627EEA"
+    },
+    {
+      "name": "Solana",
+      "value": 15,
+      "color": "#14F195"
+    },
+    {
+      "name": "Other",
+      "value": 10,
+      "color": "#A855F7"
+    }
+  ]
+}
