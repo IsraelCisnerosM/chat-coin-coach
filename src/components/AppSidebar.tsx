@@ -1,4 +1,4 @@
-import { Home, Wallet, TrendingUp, Settings, Brain } from "lucide-react";
+import { Home, TrendingUp, Receipt } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 import {
@@ -14,11 +14,9 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Wallet", url: "/wallet", icon: Wallet },
-  { title: "Market", url: "/market", icon: TrendingUp },
-  { title: "AI Assistant", url: "/ai", icon: Brain },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Home", url: "/", icon: Home },
+  { title: "Inversiones", url: "/inversiones", icon: TrendingUp },
+  { title: "Transacciones", url: "/transacciones", icon: Receipt },
 ];
 
 export function AppSidebar() {
@@ -27,12 +25,14 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-primary/20 text-primary font-medium" : "hover:bg-muted/50";
 
+  if (!open) return null;
+
   return (
-    <Sidebar className={open ? "w-60" : "w-14"} collapsible="icon">
+    <Sidebar className="w-60" collapsible="offcanvas">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className={!open ? "sr-only" : ""}>
-            Navigation
+          <SidebarGroupLabel>
+            Navegación
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -41,7 +41,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
                       <item.icon className="h-4 w-4" />
-                      {open && <span className="ml-2">{item.title}</span>}
+                      <span className="ml-2">{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
