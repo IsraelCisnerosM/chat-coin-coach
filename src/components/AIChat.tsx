@@ -8,6 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import aiAvatar from "@/assets/ai-avatar.png";
 
+// Detectar si estamos en modo local o nube
+const IS_LOCAL = import.meta.env.DEV && import.meta.env.VITE_USE_LOCAL_PYTHON === 'true';
+const LOCAL_PYTHON_URL = import.meta.env.VITE_LOCAL_PYTHON_URL || 'http://localhost:8000';
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -41,38 +45,36 @@ export const AIChat = () => {
     // Cargar saludo inicial
     const loadInitialGreeting = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('ai-chat', {
-          body: { 
-            messages: [],
-            isFirstMessage: true 
-          }
-        });
-
-        if (error) {
-          console.error('Error al cargar saludo:', error);
-          // Mostrar saludo de respaldo
-          const greetingMessage: Message = {
-            id: Date.now().toString(),
-            role: "assistant",
-            content: "¡Hola! Soy tu asistente de inversión. ¿Cómo puedo ayudarte hoy?",
-            timestamp: new Date(),
-          };
-          setMessages([greetingMessage]);
-          return;
+        let response;
+        
+        if (IS_LOCAL) {
+          // Usar servidor Python local
+          const res = await fetch(`${LOCAL_PYTHON_URL}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: [], isFirstMessage: true })
+          });
+          response = await res.json();
+        } else {
+          // Usar Supabase
+          const { data, error } = await supabase.functions.invoke('ai-chat', {
+            body: { messages: [], isFirstMessage: true }
+          });
+          if (error) throw error;
+          response = data;
         }
 
-        if (data?.response) {
+        if (response?.response) {
           const greetingMessage: Message = {
             id: Date.now().toString(),
             role: "assistant",
-            content: data.response,
+            content: response.response,
             timestamp: new Date(),
           };
           setMessages([greetingMessage]);
         }
       } catch (error) {
         console.error('Error al cargar saludo:', error);
-        // Mostrar saludo de respaldo
         const greetingMessage: Message = {
           id: Date.now().toString(),
           role: "assistant",
@@ -108,23 +110,37 @@ export const AIChat = () => {
     setIsTyping(true);
 
     try {
-      // Preparar mensajes para enviar
       const allMessages = [...messages, userMessage];
+      let response;
 
-      const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { 
-          messages: allMessages,
-          isFirstMessage: isFirstMessage
-        }
-      });
+      if (IS_LOCAL) {
+        // Usar servidor Python local
+        const res = await fetch(`${LOCAL_PYTHON_URL}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            messages: allMessages,
+            isFirstMessage: isFirstMessage
+          })
+        });
+        response = await res.json();
+      } else {
+        // Usar Supabase
+        const { data, error } = await supabase.functions.invoke('ai-chat', {
+          body: { 
+            messages: allMessages,
+            isFirstMessage: isFirstMessage
+          }
+        });
+        if (error) throw error;
+        response = data;
+      }
 
-      if (error) throw error;
-
-      if (data?.response) {
+      if (response?.response) {
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: data.response,
+          content: response.response,
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, aiMessage]);
@@ -191,7 +207,6 @@ export const AIChat = () => {
         description: "Procesando audio...",
       });
 
-      // Convertir blob a base64
       const reader = new FileReader();
       reader.readAsDataURL(audioBlob);
       
@@ -202,14 +217,27 @@ export const AIChat = () => {
           throw new Error('No se pudo procesar el audio');
         }
 
-        const { data, error } = await supabase.functions.invoke('voice-transcribe', {
-          body: { audio: base64Audio }
-        });
+        let response;
 
-        if (error) throw error;
+        if (IS_LOCAL) {
+          // Usar servidor Python local
+          const res = await fetch(`${LOCAL_PYTHON_URL}/transcribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audio: base64Audio })
+          });
+          response = await res.json();
+        } else {
+          // Usar Supabase
+          const { data, error } = await supabase.functions.invoke('voice-transcribe', {
+            body: { audio: base64Audio }
+          });
+          if (error) throw error;
+          response = data;
+        }
 
-        if (data?.text) {
-          setInput(data.text);
+        if (response?.text) {
+          setInput(response.text);
           toast({
             title: "Transcripción completa",
             description: "Tu mensaje ha sido transcrito",
