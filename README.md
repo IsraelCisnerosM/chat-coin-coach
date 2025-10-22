@@ -6,7 +6,7 @@
 
 **Democratizando el acceso a blockchain mediante la convergencia de IA y Web3**
 
-[Demo en Vivo](https://lovable.dev/projects/6623e294-38e2-46b4-b537-b34f19251e9c) • [Video Demo](#) • [Documentación](#tecnologías-utilizadas)
+[Demo en Vivo](https://lovable.dev/projects/6623e294-38e2-46b4-b537-b34f19251e9c) • • [Documentación](#tecnologías-utilizadas)
 
 </div>
 
@@ -167,9 +167,7 @@ Integrado con **ThirdWeb** para:
   - Estado (completado, pendiente, fallido)
 
 **Integración ChipiPay**:
-```typescript
-// Ejemplo de flujo (simplificado para el README)
-// La IA procesa: "Paga mi luz"
+
 → ChipiPay API identifica servicio
 → Genera QR o referencia de pago
 → Confirma con el usuario
@@ -207,9 +205,7 @@ Integrado con **ThirdWeb** para:
   - Staking rewards disponibles
 
 **Integración ThirdWeb**:
-```typescript
-// Ejemplo de flujo (simplificado)
-// Usuario: "Compra $100 de ETH"
+
 → ThirdWeb SDK analiza mejores rutas
 → Calcula gas fees automáticamente
 → Ejecuta swap con mejor precio
@@ -696,7 +692,7 @@ npm run build
 
 ## 📄 Licencia
 
-Este proyecto fue creado para el Hackathon [Nombre del Hackathon].
+Este proyecto fue creado para el Buildaton de Mexico Tech Week 2025.
 
 ---
 
