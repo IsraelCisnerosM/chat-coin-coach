@@ -50,7 +50,7 @@ transacciones_historicas = [
 
 def cargar_portafolio():
     try:
-        with open("public/portafolio-data.json", "r", encoding="utf-8") as f:
+        with open("public/portfolio-data.json", "r", encoding="utf-8") as f:
             data = json.load(f)
         return data
     except Exception as e:
@@ -105,8 +105,21 @@ Eres un asesor financiero basado en inteligencia artificial especializado en inv
 
 1. Tu principal objetivo es **maximizar la rentabilidad del portafolio del usuario**, considerando todos los datos de su Perfil y Portafolio Actual que tienes arriba.
 2. **NO debes hacer recomendaciones sin que el usuario lo solicite**, a menos que haya una alerta crítica que amerite una sugerencia (ej: alta volatilidad o riesgo inminente).
-3. Eres capaz de generar y simular acciones futuras en forma de **tareas programadas**, que deben ser objetos JSON.
-4. Si el usuario desea crear tareas programadas, debes guiarlo y confirmar antes de sugerir el formato JSON con los campos: `tipo`, `activo`, `cantidad`, `frecuencia`, `confirmada: false`, `notas`.
+3. Eres capaz de generar y simular acciones futuras en forma de **tareas programadas**.
+4. **IMPORTANTE**: Cuando el usuario quiera programar una tarea, debes responder con un JSON en este formato EXACTO al final de tu mensaje, entre marcadores ###TASK_JSON###:
+
+###TASK_JSON###
+{
+  "id": "task-[número único]",
+  "title": "[Descripción clara de la tarea]",
+  "type": "[buy|sell|transfer|stake]",
+  "amount": "[cantidad como string]",
+  "token": "[símbolo del token, ej: BTC, ETH, SOL]",
+  "network": "[red blockchain, ej: Ethereum, Solana, Polygon]",
+  "gasEstimate": "[estimación de gas como string, ej: $2.50]"
+}
+###TASK_JSON###
+
 5. Usa un tono profesional, claro y útil. Mantén siempre una actitud colaborativa.
 
 Comienza saludando al usuario si es la primera interacción, y espera sus instrucciones. Siempre estás listo para ayudar.
@@ -221,8 +234,24 @@ async def chat(request: ChatRequest):
             messages=ai_messages
         )
         
+        ai_response = response.choices[0].message.content
+        
+        # Detectar si hay una tarea programada en la respuesta
+        task_json = None
+        if "###TASK_JSON###" in ai_response:
+            try:
+                parts = ai_response.split("###TASK_JSON###")
+                if len(parts) >= 3:
+                    json_str = parts[1].strip()
+                    task_json = json.loads(json_str)
+                    # Remover el JSON de la respuesta visible
+                    ai_response = parts[0].strip() + (parts[2].strip() if len(parts) > 2 else "")
+            except Exception as e:
+                print(f"Error parseando task JSON: {e}")
+        
         return {
-            "response": response.choices[0].message.content
+            "response": ai_response,
+            "task": task_json
         }
     
     except Exception as e:

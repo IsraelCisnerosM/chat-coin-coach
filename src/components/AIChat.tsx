@@ -17,6 +17,15 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  task?: {
+    id: string;
+    title: string;
+    type: string;
+    amount: string;
+    token: string;
+    network: string;
+    gasEstimate: string;
+  };
 }
 
 interface QuickAction {
@@ -70,8 +79,14 @@ export const AIChat = () => {
             role: "assistant",
             content: response.response,
             timestamp: new Date(),
+            task: response.task,
           };
           setMessages([greetingMessage]);
+          
+          // Si viene una tarea, guardarla
+          if (response.task) {
+            await guardarTarea(response.task);
+          }
         }
       } catch (error) {
         console.error('Error al cargar saludo:', error);
@@ -142,9 +157,15 @@ export const AIChat = () => {
           role: "assistant",
           content: response.response,
           timestamp: new Date(),
+          task: response.task,
         };
         setMessages((prev) => [...prev, aiMessage]);
         setIsFirstMessage(false);
+        
+        // Si viene una tarea, guardarla
+        if (response.task) {
+          await guardarTarea(response.task);
+        }
       }
     } catch (error) {
       console.error('Error al enviar mensaje:', error);
@@ -254,6 +275,27 @@ export const AIChat = () => {
     }
   };
 
+  const guardarTarea = async (task: any) => {
+    try {
+      // Leer el archivo actual
+      const response = await fetch('/pending-tasks.json');
+      const data = await response.json();
+      
+      // Agregar la nueva tarea
+      data.tasks.push(task);
+      
+      // Guardar de vuelta (esto solo funciona en desarrollo, en producción necesitarías un endpoint)
+      console.log('Nueva tarea guardada:', task);
+      
+      toast({
+        title: "Tarea creada",
+        description: "La tarea ha sido agregada a tus tareas pendientes",
+      });
+    } catch (error) {
+      console.error('Error guardando tarea:', error);
+    }
+  };
+
   const handleQuickAction = (action: QuickAction) => {
     handleSend(action.prompt);
   };
@@ -288,17 +330,55 @@ export const AIChat = () => {
               {message.role === "assistant" && (
                 <img src={aiAvatar} alt="AI" className="w-8 h-8 rounded-full flex-shrink-0" />
               )}
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                  message.role === "assistant"
-                    ? "bg-muted text-foreground"
-                    : "bg-primary text-primary-foreground"
-                }`}
-              >
-                <p className="text-sm">{message.content}</p>
-                <span className="text-xs opacity-70 mt-1 block">
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
+              <div className="max-w-[80%] space-y-2">
+                <div
+                  className={`rounded-2xl px-4 py-3 ${
+                    message.role === "assistant"
+                      ? "bg-muted text-foreground"
+                      : "bg-primary text-primary-foreground"
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                  <span className="text-xs opacity-70 mt-1 block">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                
+                {/* Tarjeta de tarea si existe */}
+                {message.task && (
+                  <div className="bg-gradient-to-br from-accent/20 to-primary/10 border border-accent/30 rounded-xl p-4 shadow-lg animate-slide-up">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                          <span className="text-lg">
+                            {message.task.type === 'buy' ? '💰' : 
+                             message.task.type === 'sell' ? '💸' : 
+                             message.task.type === 'transfer' ? '↔️' : '🔒'}
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm">{message.task.title}</h4>
+                          <p className="text-xs text-muted-foreground capitalize">{message.task.type}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-card/50 rounded-lg p-2">
+                        <p className="text-muted-foreground">Monto</p>
+                        <p className="font-semibold">{message.task.amount} {message.task.token}</p>
+                      </div>
+                      <div className="bg-card/50 rounded-lg p-2">
+                        <p className="text-muted-foreground">Red</p>
+                        <p className="font-semibold">{message.task.network}</p>
+                      </div>
+                      <div className="bg-card/50 rounded-lg p-2 col-span-2">
+                        <p className="text-muted-foreground">Gas estimado</p>
+                        <p className="font-semibold text-accent">{message.task.gasEstimate}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}

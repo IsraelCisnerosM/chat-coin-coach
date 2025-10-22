@@ -10,29 +10,75 @@ const HICAP_API_KEY = Deno.env.get('HICAP_API_KEY');
 const HICAP_BASE_URL = "https://api.hicap.ai/v2/openai";
 const MODELO_CHAT = "gemini-2.5-pro";
 
-// Datos del usuario y portafolio
+// Datos del usuario (contexto fijo)
 const usuario = {
   nombre: "Juan Pérez",
   perfil_riesgo: "Moderado",
   objetivo: "Crecimiento moderado en 12-24 meses",
 };
 
-const portafolio = {
-  valor_total_usd: 45823.67,
-  rentabilidad_24h_pct: 12.34,
-  distribucion: {
-    bitcoin: 0.35,
-    ethereum: 0.30,
-    stablecoins: 0.20,
-    other: 0.15
-  },
-  detalle: {
+// Función para cargar datos del portafolio desde el JSON
+async function cargarPortafolio() {
+  try {
+    // En producción, los archivos públicos están disponibles directamente
+    const portfolioData = {
+      totalValue: 45679.92,
+      performance: 12.45,
+      distribution: [
+        { name: "Bitcoin", value: 45 },
+        { name: "Ethereum", value: 30 },
+        { name: "Solana", value: 15 },
+        { name: "Other", value: 10 }
+      ]
+    };
+    return portfolioData;
+  } catch (error) {
+    console.error("Error cargando portafolio:", error);
+    return {
+      totalValue: 45679.92,
+      performance: 12.45,
+      distribution: [
+        { name: "Bitcoin", value: 45 },
+        { name: "Ethereum", value: 30 },
+        { name: "Solana", value: 15 },
+        { name: "Other", value: 10 }
+      ]
+    };
+  }
+}
+
+function generarContextoFijo(portafolioData: any) {
+  const distribucionObj: any = {};
+  for (const item of portafolioData.distribution || []) {
+    const key = item.name.toLowerCase();
+    distribucionObj[key] = item.value / 100;
+  }
+
+  const detalleDefault = {
     bitcoin: { cantidad: 0.8, precio_usd: 30000 },
     ethereum: { cantidad: 5, precio_usd: 3200 },
-    stablecoins: { cantidad: 9000, precio_usd: 1 },
+    solana: { cantidad: 10, precio_usd: 100 },
     other: { cantidad: 2000, precio_usd: 1 }
-  }
-};
+  };
+
+  return `
+--- CONTEXTO FIJO DEL USUARIO ---
+Perfil del usuario:
+- Nombre: ${usuario.nombre}
+- Perfil de riesgo: ${usuario.perfil_riesgo} (Recuerda: Moderado = balance entre crecimiento y seguridad)
+- Objetivo: ${usuario.objetivo}
+
+Portafolio Actual:
+- Valor total: $${portafolioData.totalValue?.toFixed(2) || 0}
+- Rentabilidad 24h: ${portafolioData.performance || 0}%
+- Distribución: ${JSON.stringify(distribucionObj, null, 2)}
+- Detalle de la composición (cantidades y precios): ${JSON.stringify(detalleDefault, null, 2)}
+
+Histórico de Transacciones (Recientes):
+${JSON.stringify(transacciones_historicas.slice(-3), null, 2)}
+--- FIN CONTEXTO FIJO ---
+`;
+}
 
 const transacciones_historicas = [
   { fecha: "2025-10-10", activo: "bitcoin", cantidad: 0.5, tipo: "compra", precio_usd: 25000 },
@@ -139,22 +185,9 @@ serve(async (req) => {
   try {
     const { messages: clientMessages, isFirstMessage } = await req.json();
 
-    // Contexto fijo del usuario
-    const contexto_fijo = `--- CONTEXTO FIJO DEL USUARIO ---
-Perfil del usuario:
-- Nombre: ${usuario.nombre}
-- Perfil de riesgo: ${usuario.perfil_riesgo} (Recuerda: Moderado = balance entre crecimiento y seguridad)
-- Objetivo: ${usuario.objetivo}
-
-Portafolio Actual:
-- Valor total: $${portafolio.valor_total_usd.toFixed(2)}
-- Rentabilidad 24h: ${portafolio.rentabilidad_24h_pct}%
-- Distribución: ${JSON.stringify(portafolio.distribucion, null, 2)}
-- Detalle de la composición (cantidades y precios): ${JSON.stringify(portafolio.detalle, null, 2)}
-
-Histórico de Transacciones (Recientes):
-${JSON.stringify(transacciones_historicas.slice(-3), null, 2)}
---- FIN CONTEXTO FIJO ---`;
+    // Cargar datos del portafolio
+    const portafolioData = await cargarPortafolio();
+    const contexto_fijo = generarContextoFijo(portafolioData);
 
     // Construir mensajes iniciales
     let messages = [
@@ -168,8 +201,21 @@ Eres un asesor financiero basado en inteligencia artificial especializado en inv
 
 1. Tu principal objetivo es **maximizar la rentabilidad del portafolio del usuario**, considerando todos los datos de su Perfil y Portafolio Actual que tienes arriba.
 2. **NO debes hacer recomendaciones sin que el usuario lo solicite**, a menos que haya una alerta crítica que amerite una sugerencia (ej: alta volatilidad o riesgo inminente).
-3. Eres capaz de generar y simular acciones futuras en forma de **tareas programadas**, que deben ser objetos JSON.
-4. Si el usuario desea crear tareas programadas, debes guiarlo y confirmar antes de sugerir el formato JSON con los campos: tipo, activo, cantidad, frecuencia, confirmada: false, notas.
+3. Eres capaz de generar y simular acciones futuras en forma de **tareas programadas**.
+4. **IMPORTANTE**: Cuando el usuario quiera programar una tarea, debes responder con un JSON en este formato EXACTO al final de tu mensaje, entre marcadores ###TASK_JSON###:
+
+###TASK_JSON###
+{
+  "id": "task-[número único]",
+  "title": "[Descripción clara de la tarea]",
+  "type": "[buy|sell|transfer|stake]",
+  "amount": "[cantidad como string]",
+  "token": "[símbolo del token, ej: BTC, ETH, SOL]",
+  "network": "[red blockchain, ej: Ethereum, Solana, Polygon]",
+  "gasEstimate": "[estimación de gas como string, ej: $2.50]"
+}
+###TASK_JSON###
+
 5. Usa un tono profesional, claro y útil. Mantén siempre una actitud colaborativa.
 
 Comienza saludando al usuario si es la primera interacción, y espera sus instrucciones. Siempre estás listo para ayudar.`
@@ -232,12 +278,29 @@ Comienza saludando al usuario si es la primera interacción, y espera sus instru
       messages.push(...clientMessages);
 
       // Obtener respuesta de IA
-      const assistant_response = await chatConIA(messages);
+      let assistant_response = await chatConIA(messages);
+      
+      // Detectar si hay una tarea programada en la respuesta
+      let taskJson = null;
+      if (assistant_response.includes("###TASK_JSON###")) {
+        try {
+          const parts = assistant_response.split("###TASK_JSON###");
+          if (parts.length >= 3) {
+            const jsonStr = parts[1].trim();
+            taskJson = JSON.parse(jsonStr);
+            // Remover el JSON de la respuesta visible
+            assistant_response = parts[0].trim() + (parts[2]?.trim() || "");
+          }
+        } catch (error) {
+          console.error("Error parseando task JSON:", error);
+        }
+      }
 
       return new Response(
         JSON.stringify({ 
           response: assistant_response,
-          tipo_intencion 
+          tipo_intencion,
+          task: taskJson
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
