@@ -82,92 +82,93 @@ export default function Educacion() {
       </h1>
 
       {/* Chatbot Bloky Health */}
-      <Card className="bg-[hsl(291,47%,88%)] rounded-2xl p-6 shadow-md mb-8 border-0">
+      <Card className="flex flex-col h-[600px] bg-[hsl(291,47%,88%)] shadow-md mb-8 border-0">
         {/* Header del Chatbot */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="rounded-full p-2 bg-[hsl(259,59%,46%)]">
-            <MessageCircle className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-[hsl(263,68%,20%)]">
-              Hola, soy Bloky Health
-            </h2>
-            <p className="text-sm text-[hsl(263,68%,33%)]">
-              Estoy aquí para ayudarte a entender tu dinero. ¿Qué te gustaría revisar hoy?
-            </p>
+        <div className="p-4 border-b border-[hsl(291,64%,62%)]/20">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full p-2 bg-[hsl(259,59%,46%)]">
+              <MessageCircle className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-[hsl(263,68%,20%)]">Bloky Health</h3>
+              <p className="text-xs text-[hsl(263,68%,33%)]">
+                Estoy aquí para ayudarte a entender tu dinero
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Área de Mensajes */}
-        {messages.length > 0 && (
-          <ScrollArea className="h-[300px] bg-white rounded-lg p-4 mb-4">
-            <div className="space-y-4">
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`rounded-2xl p-3 max-w-[80%] ${
-                      msg.role === "user"
-                        ? "bg-[hsl(259,59%,46%)] text-white"
-                        : "bg-gray-100 text-gray-900"
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="rounded-2xl p-3 bg-gray-100">
-                    <Loader2 className="h-4 w-4 animate-spin text-[hsl(259,59%,46%)]" />
-                  </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        )}
-
-        {/* Botones de Sugerencias */}
-        {showSuggestions && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {suggestions.map((suggestion, idx) => (
-              <Button
+        <ScrollArea className="flex-1 p-4 bg-white rounded-lg">
+          <div className="space-y-4">
+            {messages.map((msg, idx) => (
+              <div
                 key={idx}
-                variant="outline"
-                size="sm"
-                onClick={() => handleSendMessage(suggestion)}
-                className="rounded-full bg-white border-[hsl(291,64%,62%)] text-[hsl(259,59%,46%)] text-xs hover:bg-[hsl(291,47%,88%)]"
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                {suggestion}
-              </Button>
+                <div
+                  className={`rounded-2xl p-3 max-w-[80%] ${
+                    msg.role === "user"
+                      ? "bg-[hsl(259,59%,46%)] text-white"
+                      : "bg-gray-100 text-gray-900"
+                  }`}
+                >
+                  {msg.content}
+                </div>
+              </div>
             ))}
-          </div>
-        )}
-
-        {/* Barra de Input */}
-        <div className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-            placeholder="Pregúntame sobre tus finanzas..."
-            className="bg-white border-[hsl(291,64%,62%)] rounded-lg focus:ring-[hsl(259,59%,46%)]"
-            disabled={isLoading}
-          />
-          <Button
-            size="icon"
-            onClick={() => handleSendMessage()}
-            disabled={isLoading || !input.trim()}
-            className="shrink-0 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white rounded-lg"
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="rounded-2xl p-3 bg-gray-100">
+                  <Loader2 className="h-4 w-4 animate-spin text-[hsl(259,59%,46%)]" />
+                </div>
+              </div>
             )}
-          </Button>
+          </div>
+        </ScrollArea>
+
+        {/* Footer con Sugerencias e Input */}
+        <div className="p-4 border-t border-[hsl(291,64%,62%)]/20 space-y-3">
+          {/* Botones de Sugerencias */}
+          {showSuggestions && (
+            <div className="flex flex-wrap gap-2">
+              {suggestions.map((suggestion, idx) => (
+                <Button
+                  key={idx}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSendMessage(suggestion)}
+                  className="rounded-full bg-white border-[hsl(291,64%,62%)] text-[hsl(259,59%,46%)] text-xs hover:bg-[hsl(291,47%,88%)]"
+                >
+                  {suggestion}
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {/* Barra de Input */}
+          <div className="flex gap-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+              placeholder="Pregúntame sobre tus finanzas..."
+              className="bg-white border-[hsl(291,64%,62%)]"
+              disabled={isLoading}
+            />
+            <Button
+              size="icon"
+              onClick={() => handleSendMessage()}
+              disabled={isLoading || !input.trim()}
+              className="shrink-0 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
       </Card>
 

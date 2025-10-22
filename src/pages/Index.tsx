@@ -3,7 +3,7 @@ import { Eye, EyeOff, Send, Download, Receipt, Coffee, ArrowDownLeft, ShoppingCa
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -134,77 +134,93 @@ const Index = () => {
       </div>
 
       {/* AI Chat (Bloky) */}
-      <div className="mx-4 mt-6 p-4 rounded-3xl bg-[hsl(291,47%,88%)] shadow-md">
-        {/* Avatar y Nombre */}
-        <div className="flex items-center gap-3 mb-3">
-          <div className="h-10 w-10 rounded-full p-2 bg-[hsl(259,59%,46%)] flex items-center justify-center">
-            <MessageCircle className="h-5 w-5 text-white" />
+      <Card className="mx-4 mt-6 flex flex-col h-[600px] shadow-md bg-[hsl(291,47%,88%)] border-0">
+        {/* Header */}
+        <div className="p-4 border-b border-[hsl(291,64%,62%)]/20">
+          <div className="flex items-center gap-3">
+            <div className="rounded-full p-2 bg-[hsl(259,59%,46%)]">
+              <MessageCircle className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-[hsl(263,68%,20%)]">Bloky</h3>
+              <p className="text-xs text-[hsl(263,68%,33%)]">Tu asistente inteligente</p>
+            </div>
           </div>
-          <span className="font-semibold text-[hsl(263,68%,20%)]">Bloky</span>
         </div>
 
         {/* Mensajes del Chat */}
-        <div className="space-y-2 mb-3 max-h-60 overflow-y-auto">
-          {messages.length === 0 ? (
-            <div className="rounded-2xl p-3 bg-white">
-              <p className="text-sm text-[hsl(263,68%,33%)]">Hola, ¿en qué puedo ayudarte hoy?</p>
-            </div>
-          ) : (
-            messages.map((msg, idx) => (
-              <div 
-                key={idx} 
-                className={`rounded-2xl p-3 ${
-                  msg.role === 'user' 
-                    ? 'bg-[hsl(259,59%,46%)] text-white ml-8' 
-                    : 'bg-white text-[hsl(263,68%,33%)] mr-8'
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+        <ScrollArea className="flex-1 p-4 bg-white rounded-lg">
+          <div className="space-y-4">
+            {messages.length === 0 ? (
+              <div className="rounded-2xl p-3 bg-gray-100">
+                <p className="text-sm text-[hsl(263,68%,33%)]">Hola, ¿en qué puedo ayudarte hoy?</p>
               </div>
-            ))
-          )}
-          {isLoading && (
-            <div className="rounded-2xl p-3 bg-white mr-8">
-              <p className="text-sm text-[hsl(263,68%,33%)]">Pensando...</p>
-            </div>
-          )}
-        </div>
+            ) : (
+              messages.map((msg, idx) => (
+                <div 
+                  key={idx} 
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`rounded-2xl p-3 max-w-[80%] ${
+                      msg.role === 'user' 
+                        ? 'bg-[hsl(259,59%,46%)] text-white' 
+                        : 'bg-gray-100 text-[hsl(263,68%,33%)]'
+                    }`}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                </div>
+              ))
+            )}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="rounded-2xl p-3 bg-gray-100">
+                  <p className="text-sm text-[hsl(263,68%,33%)]">Pensando...</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
 
-        {/* Botones de Sugerencias */}
-        <div className="flex flex-wrap gap-2 mb-3">
-          {suggestions.map((suggestion, index) => (
-            <Button
-              key={index}
-              size="sm"
-              variant="outline"
-              className="bg-white text-xs rounded-full border-[hsl(291,64%,62%)] text-[hsl(259,59%,46%)] hover:bg-[hsl(291,47%,88%)]"
-              onClick={() => handleSuggestionClick(suggestion)}
+        {/* Footer con Sugerencias e Input */}
+        <div className="p-4 border-t border-[hsl(291,64%,62%)]/20 space-y-3">
+          {/* Botones de Sugerencias */}
+          <div className="flex flex-wrap gap-2">
+            {suggestions.map((suggestion, index) => (
+              <Button
+                key={index}
+                size="sm"
+                variant="outline"
+                className="bg-white text-xs rounded-full border-[hsl(291,64%,62%)] text-[hsl(259,59%,46%)] hover:bg-[hsl(291,47%,88%)]"
+                onClick={() => handleSuggestionClick(suggestion)}
+              >
+                {suggestion}
+              </Button>
+            ))}
+          </div>
+
+          {/* Input de Chat */}
+          <div className="flex gap-2">
+            <Input
+              placeholder="Pregunta a tu agente..."
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              className="bg-white border-[hsl(291,64%,62%)]"
+              disabled={isLoading}
+            />
+            <Button 
+              size="icon" 
+              className="shrink-0 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
+              onClick={() => handleSendMessage()}
+              disabled={isLoading}
             >
-              {suggestion}
+              <Send className="h-4 w-4" />
             </Button>
-          ))}
+          </div>
         </div>
-
-        {/* Input de Chat */}
-        <div className="flex gap-2">
-          <Input
-            placeholder="Pregunta a tu agente..."
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            className="bg-white border-[hsl(291,64%,62%)]"
-            disabled={isLoading}
-          />
-          <Button 
-            size="icon" 
-            className="shrink-0 bg-[hsl(259,59%,46%)] hover:bg-[hsl(263,68%,33%)] text-white"
-            onClick={() => handleSendMessage()}
-            disabled={isLoading}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      </Card>
 
       {/* Action Buttons */}
       <div className="px-4 mt-6">
