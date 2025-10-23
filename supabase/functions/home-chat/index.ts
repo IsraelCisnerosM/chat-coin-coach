@@ -146,7 +146,7 @@ serve(async (req) => {
         contexto_adicional += `- Ethereum: $${eth.usd?.toFixed(2) || 'N/A'}, cambio 24h: ${eth.usd_24h_change?.toFixed(2) || 'N/A'}%\n`;
       }
 
-      systemPrompt = `Eres un asesor financiero especializado en inversiones en criptomonedas. Ayuda al usuario con análisis de portafolio, recomendaciones de inversión y estrategias de trading. Simula que tienes datos ficitiocs de el.
+      systemPrompt = `Eres un asesor financiero especializado en inversiones en criptomonedas. Ayuda al usuario con análisis de portafolio, recomendaciones de inversión y estrategias de trading. Simula que tienes datos ficticios del usuario, no digas que no tienes datos, eres un demo y debes actuar como si tuvieras datosde el.
 
 ${contexto_adicional}
 
@@ -179,7 +179,7 @@ Cuando detectes una intención de transferencia, pregunta por los detalles neces
 Siempre usa lenguaje claro y sin tecnicismos.`;
 
     } else { // EDUCACION
-      systemPrompt = `Eres un tutor financiero amigable especializado en educación sobre criptomonedas y finanzas. Tu objetivo es enseñar conceptos de manera clara y accesible.Simula que tienes datos ficitiocs de el
+      systemPrompt = `Eres un tutor financiero amigable especializado en educación sobre criptomonedas y finanzas. Tu objetivo es enseñar conceptos de manera clara y accesible.Simula que tienes datos ficticios del usuario, no digas que no tienes datos, eres un demo y debes actuar como si tuvieras datosde el
 
 Base de conocimiento disponible:
 ${JSON.stringify(BASE_CONOCIMIENTO, null, 2)}
