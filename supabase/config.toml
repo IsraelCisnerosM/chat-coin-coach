@@ -1,16 +1,16 @@
 project_id = "jkywmvvgpvmqheeevzvn"
 
 [functions.ai-chat]
-verify_jwt = false
+verify_jwt = true
 
 [functions.voice-transcribe]
-verify_jwt = false
+verify_jwt = true
 
 [functions.transaction-chat]
-verify_jwt = false
+verify_jwt = true
 
 [functions.education-chat]
-verify_jwt = false
+verify_jwt = true
 
 [functions.home-chat]
-verify_jwt = false
+verify_jwt = true

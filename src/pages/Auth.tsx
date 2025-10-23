@@ -5,26 +5,75 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Coins, Mail, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { z } from "zod";
+
+const authSchema = z.object({
+  email: z.string().email("Email inválido").min(1, "Email requerido"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+});
 
 export default function Auth() {
   const navigate = useNavigate();
+  const { signUp, signIn } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Si es registro, mostrar notificación
-    if (!isLogin) {
-      toast({
-        title: "Wallet creada exitosamente con Chipi pay",
-        description: "Tu cuenta ha sido creada correctamente",
-      });
+    // Validate input
+    try {
+      authSchema.parse({ email, password });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Error de validación",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
     }
-    
-    // MVP: Solo redirige sin validación
-    navigate("/home");
+
+    setLoading(true);
+
+    try {
+      let result;
+      
+      if (isLogin) {
+        result = await signIn(email, password);
+      } else {
+        result = await signUp(email, password);
+        
+        if (!result.error) {
+          toast({
+            title: "Wallet creada exitosamente con Chipi pay",
+            description: "Tu cuenta ha sido creada correctamente",
+          });
+        }
+      }
+
+      if (result.error) {
+        toast({
+          title: "Error",
+          description: result.error.message || "Error de autenticación",
+          variant: "destructive",
+        });
+      } else if (isLogin) {
+        navigate("/home");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error inesperado. Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,6 +108,7 @@ export default function Auth() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10 bg-white border-[hsl(291,64%,62%)]/30 focus:border-[hsl(259,59%,46%)] text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -77,6 +127,7 @@ export default function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 bg-white border-[hsl(291,64%,62%)]/30 focus:border-[hsl(259,59%,46%)] text-[hsl(263,68%,20%)] placeholder:text-[hsl(263,68%,33%)]"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -96,9 +147,10 @@ export default function Auth() {
           {/* Botón Principal */}
           <Button
             type="submit"
+            disabled={loading}
             className="w-full bg-gradient-to-r from-[hsl(259,59%,46%)] to-[hsl(291,64%,62%)] hover:from-[hsl(263,68%,33%)] hover:to-[hsl(259,59%,46%)] text-white font-semibold py-6 text-base"
           >
-            {isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
+            {loading ? "Procesando..." : (isLogin ? "Iniciar Sesión" : "Crear Cuenta")}
           </Button>
         </form>
 
